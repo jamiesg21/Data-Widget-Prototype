@@ -108,31 +108,85 @@ class DataStore:
         comp = self._competitions.get(competition_id)
         if comp is None:
             return None
+
         rows = []
         for entry in comp["standings"]:
             team = self._teams.get(entry["team_id"], {})
+            stats = entry if view == "overall" else self._split_stats(entry, view)
             rows.append({
-                "position": entry["position"],
+                "position": stats.get("position", entry["position"]),
                 "team": {
                     "team_id": entry["team_id"],
                     "name": team.get("name", entry["team_id"]),
                     "short_name": team.get("short_name", entry["team_id"].upper()),
                     "crest_url": None,
                 },
-                "played": entry["played"],
-                "won": entry["won"],
-                "drawn": entry["drawn"],
-                "lost": entry["lost"],
-                "goals_for": entry["goals_for"],
-                "goals_against": entry["goals_against"],
-                "goal_difference": entry["goals_for"] - entry["goals_against"],
-                "points": entry["points"],
+                "played": stats["played"],
+                "won": stats["won"],
+                "drawn": stats["drawn"],
+                "lost": stats["lost"],
+                "goals_for": stats["goals_for"],
+                "goals_against": stats["goals_against"],
+                "goal_difference": stats["goals_for"] - stats["goals_against"],
+                "points": stats["points"],
                 "form": entry["form"],
                 "position_change": 0,
             })
+
+        # Re-sort + re-number when not viewing the overall table — splits change
+        # the relative ordering. Tie-break: points → GD → goals scored.
+        if view in ("home", "away"):
+            rows.sort(key=lambda r: (-r["points"], -r["goal_difference"], -r["goals_for"]))
+            for i, r in enumerate(rows, start=1):
+                r["position"] = i
+
         if limit is not None:
             rows = rows[:limit]
         return {"view": view, "rows": rows}
+
+    @staticmethod
+    def _split_stats(entry: dict, view: str) -> dict:
+        """Derive plausible home/away splits from an overall standings row.
+
+        Home teams play ~half their games at home (one extra fixture in the
+        odd-game-count case) and enjoy a home-advantage bias: 60% of total
+        wins, 50% of draws. The remainder goes to the away column. Goals
+        are split 55/45 (for) and 45/55 (against). Deterministic — same
+        input always produces the same split, which keeps the cache honest.
+        """
+        total_played = entry["played"]
+        half = total_played // 2
+        if view == "home":
+            played = half + (total_played % 2)
+            won = round(entry["won"] * 0.6)
+            drawn = round(entry["drawn"] * 0.5)
+            gf = round(entry["goals_for"] * 0.55)
+            ga = round(entry["goals_against"] * 0.45)
+        else:  # away
+            played = half
+            won = entry["won"] - round(entry["won"] * 0.6)
+            drawn = entry["drawn"] - round(entry["drawn"] * 0.5)
+            gf = entry["goals_for"] - round(entry["goals_for"] * 0.55)
+            ga = entry["goals_against"] - round(entry["goals_against"] * 0.45)
+
+        # Clamp so wins+draws never exceed games played (rounding can push
+        # them over by 1 — trim draws first, then wins).
+        if won + drawn > played:
+            excess = won + drawn - played
+            trim_d = min(drawn, excess)
+            drawn -= trim_d
+            won = max(0, won - (excess - trim_d))
+
+        lost = max(0, played - won - drawn)
+        return {
+            "played": played,
+            "won": won,
+            "drawn": drawn,
+            "lost": lost,
+            "goals_for": gf,
+            "goals_against": ga,
+            "points": won * 3 + drawn,
+        }
 
     # ---- fixtures ----
 

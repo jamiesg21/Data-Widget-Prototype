@@ -2,10 +2,136 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Operator example page — placeholder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BoyleSports — Arsenal vs Liverpool</title>
+  <style>
+    /* Operator's own page styles (intentionally distinct from widget defaults).
+       Demonstrates that the widget inherits cleanly into the host page. */
+    :root {
+      --brand-green: #1e7a2e;
+      --brand-orange: #f5a623;
+    }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      margin: 0;
+      background: #f3f4f6;
+      color: #1a1a1a;
+    }
+    .page-header {
+      background: var(--brand-green);
+      color: #fff;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .page-header__logo {
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      font-size: 20px;
+    }
+    .page-main {
+      max-width: 880px;
+      margin: 24px auto;
+      padding: 0 16px;
+    }
+    .page-main h1 {
+      font-size: 22px;
+      margin: 8px 0 16px;
+    }
+
+    /* ---- Operator brand override applied to the widget via CSS variables ---- */
+    #sr-widget-root.sr-widget {
+      --sr-color-primary: var(--brand-green);
+      --sr-color-secondary: var(--brand-orange);
+      --sr-tab-active-bg: var(--brand-green);
+      --sr-border-radius: 8px;
+    }
+
+    .demo-controls {
+      margin-top: 16px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .demo-controls button {
+      background: #fff;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-family: inherit;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .demo-controls button:hover { background: #f3f4f6; }
+  </style>
 </head>
 <body>
-  <h1>Example page — placeholder</h1>
-  <p>Component 4 will replace this page with the embedded widget demo.</p>
+  <header class="page-header">
+    <span class="page-header__logo">BoyleSports</span>
+    <span style="opacity: 0.85;">Match centre</span>
+  </header>
+
+  <main class="page-main">
+    <h1>Arsenal vs Liverpool — Premier League</h1>
+    <p>Embedded widget below. The CSS variable overrides above re-tint it to the BoyleSports green/orange.</p>
+
+    <!-- Widget mount point + embed tag (per spec §8.1) -->
+    <div id="sr-widget-root"></div>
+
+    <!-- Operator-supplied per-page-type config — spec §6.
+         In production this is fetched from /api/v1/config/{client}; here we
+         set it inline to demonstrate the seam and the override behaviour. -->
+    <script>
+      window.SR_CONFIG = {
+        match: {
+          tabs: [
+            { id: "league_table",   label: "Standings",     default: true  },
+            { id: "fixtures",       label: "Form",          default: false },
+            { id: "lineups",        label: "Line-ups",      default: false },
+            { id: "team_stats",     label: "Team stats",    default: false },
+            { id: "h2h",            label: "Head to head",  default: false },
+            { id: "xg_timeline",    label: "xG race",       default: false },
+            { id: "match_facts",    label: "Match facts",   default: false },
+          ],
+          options: {
+            league_table: { default_view: "overall", limit: 10 },
+          },
+        },
+      };
+    </script>
+
+    <script
+      src="/widget/loader.js"
+      data-client="boylesports"
+      data-page-type="match"
+      data-match-id="ars-liv-2026-05-06"
+      data-dev-mode="1"></script>
+
+    <div class="demo-controls">
+      <button onclick="srPhase('pre')">Set phase: pre</button>
+      <button onclick="srPhase('live')">Set phase: live</button>
+      <button onclick="srPhase('ft')">Set phase: ft</button>
+    </div>
+  </main>
+
+  <script>
+    // Helper to flip phase via the dev endpoint, then nudge the widget to
+    // refresh its context immediately rather than waiting for the next poll.
+    async function srPhase(phase) {
+      const res = await fetch(`/api/v1/_dev/phase/ars-liv-2026-05-06`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phase }),
+      });
+      if (!res.ok) {
+        alert(`Phase toggle failed: HTTP ${res.status}`);
+        return;
+      }
+      if (window.__srWidget) {
+        window.__srWidget._tickContext();
+      }
+    }
+  </script>
 </body>
 </html>

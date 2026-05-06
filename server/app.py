@@ -83,6 +83,9 @@ def make_app() -> tornado.web.Application:
 
         # Health
         (r"/healthz", HealthHandler),
+
+        # Root landing page — quick links to example, config tool, API docs
+        (r"/", IndexHandler),
     ]
 
     return tornado.web.Application(
@@ -94,6 +97,31 @@ def make_app() -> tornado.web.Application:
 class HealthHandler(tornado.web.RequestHandler):
     def get(self) -> None:
         self.write({"status": "ok"})
+
+
+class IndexHandler(tornado.web.RequestHandler):
+    def get(self) -> None:
+        self.set_header("Content-Type", "text/html; charset=utf-8")
+        self.write("""<!doctype html>
+<html><head><meta charset="utf-8"><title>Sportingrisk Widget Prototype</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 640px; margin: 60px auto; padding: 0 24px; color: #1a1a1a; }
+  h1 { margin-bottom: 4px; }
+  p.lead { color: #6b7280; margin-top: 0; }
+  ul { line-height: 1.8; }
+  code { background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+</style></head>
+<body>
+  <h1>Sportingrisk Widget Prototype</h1>
+  <p class="lead">Configurable football data widget suite — candidate prototype.</p>
+  <ul>
+    <li><a href="/example/">Example operator page</a> — embedded widget on a match-page context</li>
+    <li><a href="/config/">Theming tool</a> — live preview + CSS-variable export</li>
+    <li><a href="/api/v1/context/match/ars-liv-2026-05-06">API sample</a> — match context endpoint</li>
+    <li><a href="/healthz">Health check</a></li>
+  </ul>
+  <p>Source: <code>github.com/jamiesg21/Data-Widget-Prototype</code> · Docs: <code>/docs/api.md</code> in the repo</p>
+</body></html>""")
 
 
 def main() -> None:
