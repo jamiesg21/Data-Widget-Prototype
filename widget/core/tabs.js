@@ -49,8 +49,25 @@ export class TabContainer {
     this.rootEl.appendChild(panels);
     this.navEl = nav;
 
+    // Detect tab-strip overflow so we can force an always-visible scrollbar.
+    // CSS-only reliance on `-webkit-appearance: none` is no longer enough on
+    // recent Chromium/Safari — the OS overlay-scrollbar setting wins. Toggling
+    // overflow-x: scroll (via the .sr-tabs--scrollable class) reserves the
+    // bar regardless. When tabs fit, we leave it on auto so no empty bar paints.
+    this._checkOverflow();
+    if (typeof ResizeObserver !== "undefined") {
+      this._resizeObserver = new ResizeObserver(() => this._checkOverflow());
+      this._resizeObserver.observe(this.navEl);
+    }
+
     const initial = this.tabs.find((t) => t.default) || this.tabs[0];
     if (initial) this.activate(initial.id);
+  }
+
+  _checkOverflow() {
+    if (!this.navEl) return;
+    const overflowing = this.navEl.scrollWidth > this.navEl.clientWidth + 1;
+    this.navEl.classList.toggle("sr-tabs--scrollable", overflowing);
   }
 
   activate(id) {

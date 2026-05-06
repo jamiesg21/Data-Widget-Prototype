@@ -2,10 +2,71 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Sportingrisk Widget — Theming Tool</title>
+  <link rel="stylesheet" href="/config/config.css" />
 </head>
 <body>
-  <h1>Theming tool — placeholder</h1>
-  <p>Component 3 will replace this page with the theming UI.</p>
+  <header class="ct-header">
+    <div class="ct-header__brand">
+      <strong>Sportingrisk</strong> · Widget Theming Tool
+    </div>
+    <div class="ct-header__themes" role="radiogroup" aria-label="Editing theme">
+      <button type="button" class="ct-theme-btn ct-theme-btn--active" data-theme="light">☀ Light</button>
+      <button type="button" class="ct-theme-btn"                 data-theme="dark">☾ Dark</button>
+    </div>
+  </header>
+
+  <main class="ct-main">
+    <aside class="ct-controls" aria-label="Theme controls">
+      <!-- Controls injected by config.js -->
+    </aside>
+
+    <section class="ct-preview" aria-label="Live widget preview">
+      <div class="ct-preview__inner">
+        <!-- Inline overrides — sits AFTER widget.css in the cascade so it wins.
+             config.js rewrites this whenever a control changes. -->
+        <style id="sr-preview-overrides"></style>
+
+        <div id="sr-widget-root" data-theme="light"></div>
+
+        <script>
+          window.SR_CONFIG = {
+            match: {
+              tabs: [
+                { id: "league_table", label: "Standings",    default: true  },
+                { id: "fixtures",     label: "Form",         default: false },
+                { id: "lineups",      label: "Line-ups",     default: false },
+                { id: "team_stats",   label: "Team stats",   default: false },
+                { id: "h2h",          label: "Head to head", default: false },
+                { id: "xg_timeline",  label: "xG race",      default: false },
+                { id: "match_facts",  label: "Match facts",  default: false },
+              ],
+              options: { league_table: { default_view: "overall", limit: 8 } },
+            },
+          };
+        </script>
+        <script
+          src="/widget/loader.js"
+          data-client="theming-tool"
+          data-page-type="match"
+          data-match-id="ars-liv-2026-05-06"></script>
+      </div>
+    </section>
+  </main>
+
+  <footer class="ct-output">
+    <div class="ct-output__head">
+      <h3>Generated CSS</h3>
+      <div class="ct-output__actions">
+        <button type="button" id="ct-reset" class="ct-btn">Reset to defaults</button>
+        <button type="button" id="ct-copy"  class="ct-btn ct-btn--primary">Copy CSS</button>
+      </div>
+    </div>
+    <pre id="ct-output-code" class="ct-output__code"><code></code></pre>
+    <p class="ct-output__hint">Paste into your operator stylesheet. Apply <code>data-theme="dark"</code> on the widget root to switch.</p>
+  </footer>
+
+  <script type="module" src="/config/config.js"></script>
 </body>
 </html>

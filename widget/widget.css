@@ -162,14 +162,51 @@
   display: flex;
   gap: 0;
   overflow-x: auto;
-  scrollbar-width: thin;
   background: var(--sr-color-bg);
   border-bottom: var(--sr-border-width) solid var(--sr-color-border);
+  /* Firefox — thin draggable scrollbar with themed thumb. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--sr-color-text-muted) var(--sr-color-surface);
+}
+
+/* Applied by tabs.js when content actually overflows. `overflow-x: scroll`
+   (vs auto) is the only reliable way to keep the scrollbar always visible
+   on macOS — the OS "Show scroll bars: When scrolling" preference can
+   otherwise hide even custom-styled overlay bars. */
+.sr-tabs--scrollable {
+  overflow-x: scroll;
+}
+
+/* WebKit (Safari, Chrome on macOS): force always-visible scrollbar.
+   Without -webkit-appearance:none the OS keeps the overlay style and
+   hides the bar when not actively scrolling, which makes overflowing
+   tabs feel "stuck" — as Jamie hit. */
+.sr-tabs::-webkit-scrollbar {
+  -webkit-appearance: none;
+  height: 8px;
+}
+.sr-tabs::-webkit-scrollbar-track {
+  background: var(--sr-color-surface);
+}
+.sr-tabs::-webkit-scrollbar-thumb {
+  background-color: var(--sr-color-text-muted);
+  border-radius: 4px;
+  border: 2px solid var(--sr-color-surface);
+}
+.sr-tabs::-webkit-scrollbar-thumb:hover {
+  background-color: var(--sr-color-text);
 }
 
 .sr-tabs__btn {
   flex: 0 0 auto;
-  padding: calc(var(--sr-spacing-unit) * 1.5) calc(var(--sr-spacing-unit) * 2.5);
+  /* Vertical padding is clamped — a tall tab strip looks wrong regardless
+     of how big spacing-unit goes. Horizontal padding scales freely so
+     operators can intentionally choose chunky tabs; if total width
+     overflows, the always-visible scrollbar above lets the user drag to
+     reach hidden tabs. */
+  padding:
+    clamp(8px, calc(var(--sr-spacing-unit) * 1.25), 16px)
+    calc(var(--sr-spacing-unit) * 2);
   background: var(--sr-tab-bg);
   color: var(--sr-tab-text);
   border: none;
