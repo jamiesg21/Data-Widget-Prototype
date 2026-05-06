@@ -113,7 +113,7 @@ class IndexHandler(tornado.web.RequestHandler):
 </style></head>
 <body>
   <h1>Sportingrisk Widget Prototype</h1>
-  <p class="lead">Configurable football data widget suite — candidate prototype.</p>
+  <p class="lead">Configurable football data widget suite.</p>
   <ul>
     <li><a href="/example/">Example operator page</a> — embedded widget on a match-page context</li>
     <li><a href="/config/">Theming tool</a> — live preview + CSS-variable export</li>
