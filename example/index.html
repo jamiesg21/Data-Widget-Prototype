@@ -3,133 +3,521 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>BoyleSports — Arsenal vs Liverpool</title>
+  <title>Arsenal v Liverpool — BoyleSports</title>
   <style>
-    /* Operator's own page styles (intentionally distinct from widget defaults).
-       Demonstrates that the widget inherits cleanly into the host page. */
+    /* =================================================================
+       Operator-page styles. This is a mocked BoyleSports match page
+       used to demonstrate the widget rendering inside a realistic host.
+       Nothing here is widget code — only the operator's surrounding
+       chrome. The widget's own styling is in /widget/widget.css and
+       gets re-tinted by the CSS-variable overrides below.
+       ================================================================= */
+
     :root {
-      --brand-green: #1e7a2e;
-      --brand-orange: #f5a623;
+      --bs-green:        #0a5c1a;
+      --bs-green-dark:   #074312;
+      --bs-orange:       #f5a623;
+      --bs-bg:           #f0f1f3;
+      --bs-surface:      #ffffff;
+      --bs-text:         #1a1a1a;
+      --bs-text-muted:   #6b7280;
+      --bs-border:       #d8dce0;
     }
+
+    * { box-sizing: border-box; }
+
     body {
-      font-family: 'Inter', system-ui, sans-serif;
       margin: 0;
-      background: #f3f4f6;
-      color: #1a1a1a;
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: var(--bs-bg);
+      color: var(--bs-text);
+      font-size: 14px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
     }
-    .page-header {
-      background: var(--brand-green);
+
+    a { color: inherit; text-decoration: none; }
+
+    /* ---- Top header (slim) ---- */
+    .op-header {
+      background: var(--bs-green);
       color: #fff;
-      padding: 16px 24px;
+    }
+
+    .op-header__inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 14px 24px;
       display: flex;
       align-items: center;
-      gap: 12px;
+      justify-content: space-between;
+      gap: 16px;
     }
-    .page-header__logo {
+
+    .op-logo {
+      font-size: 22px;
       font-weight: 800;
       letter-spacing: 0.04em;
-      font-size: 20px;
-    }
-    .page-main {
-      max-width: 880px;
-      margin: 24px auto;
-      padding: 0 16px;
-    }
-    .page-main h1 {
-      font-size: 22px;
-      margin: 8px 0 16px;
+      color: #fff;
     }
 
-    /* ---- Operator brand override applied to the widget via CSS variables ---- */
-    #sr-widget-root.sr-widget {
-      --sr-color-primary: var(--brand-green);
-      --sr-color-secondary: var(--brand-orange);
-      --sr-tab-active-bg: var(--brand-green);
-      --sr-border-radius: 8px;
+    .op-logo strong { color: var(--bs-orange); }
+
+    .op-header__section {
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.7);
+      font-weight: 600;
     }
 
-    .demo-controls {
-      margin-top: 16px;
+    /* ---- Breadcrumb (static — non-interactive) ---- */
+    .op-breadcrumb {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 12px 24px;
+      font-size: 12px;
+      color: var(--bs-text-muted);
+    }
+
+    .op-breadcrumb__sep { margin: 0 6px; opacity: 0.6; }
+
+    /* ---- Main grid: widget + odds sidebar ---- */
+    .op-main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px 48px;
+    }
+
+    .op-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .op-content {
+      min-width: 0;
+    }
+
+    .op-aside {
+      position: sticky;
+      top: 16px;
       display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
+      flex-direction: column;
+      gap: 16px;
     }
-    .demo-controls button {
-      background: #fff;
-      border: 1px solid #d1d5db;
-      border-radius: 6px;
-      padding: 6px 12px;
-      font-family: inherit;
+
+    /* ---- Widget overrides (CSS-variable theming demo) ---- */
+    /* This is the *only* widget-specific CSS in this file — it shows
+       how an operator brands the widget without touching widget source.
+       Same shape as what the /config/ tool exports. */
+    #sr-widget-root.sr-widget {
+      --sr-color-primary:   var(--bs-green);
+      --sr-color-secondary: var(--bs-orange);
+      --sr-tab-active-bg:   var(--bs-green);
+      --sr-border-radius:   8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+
+    /* ---- Match info banner (above widget) ---- */
+    .op-match-banner {
+      background: var(--bs-surface);
+      border: 1px solid var(--bs-border);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .op-match-banner__title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .op-match-banner__meta {
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--bs-text-muted);
+    }
+
+    .op-match-banner__live {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 4px;
+      background: #fce8e6;
+      color: #c0392b;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .op-match-banner__live::before {
+      content: '●';
+      animation: bs-pulse 1.4s infinite;
+    }
+
+    @keyframes bs-pulse {
+      0%, 100% { opacity: 1; }
+      50%      { opacity: 0.3; }
+    }
+
+    /* ---- Sidebar: betting markets ---- */
+    .op-card {
+      background: var(--bs-surface);
+      border: 1px solid var(--bs-border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .op-card__head {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--bs-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .op-card__title {
+      margin: 0;
       font-size: 13px;
-      cursor: pointer;
+      font-weight: 700;
     }
-    .demo-controls button:hover { background: #f3f4f6; }
+
+    .op-card__hint {
+      font-size: 10px;
+      color: var(--bs-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .op-market {
+      list-style: none;
+      margin: 0;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .op-market__row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 6px;
+    }
+    /* Subtle alternating shading so rows read as info cards, not buttons —
+       no hover state, no cursor:pointer, no border. */
+    .op-market__row + .op-market__row {
+      border-top: 1px solid #f3f4f6;
+    }
+
+    .op-market__label {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .op-market__odds {
+      font-family: 'SF Mono', Menlo, monospace;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--bs-green);
+      min-width: 48px;
+      text-align: right;
+    }
+
+    .op-market__row.is-favourite .op-market__odds {
+      color: var(--bs-text);
+    }
+
+    /* ---- Footer ---- */
+    .op-footer {
+      background: #1a1f24;
+      color: rgba(255,255,255,0.65);
+      font-size: 12px;
+      padding: 24px;
+      margin-top: 48px;
+    }
+
+    .op-footer__inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .op-footer__legal strong { color: #fff; font-weight: 700; }
+
+    /* ---- Demo controls (floating bottom bar) ---- */
+    .demo-bar {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15,20,25,0.94);
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 10px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      z-index: 100;
+      backdrop-filter: blur(8px);
+    }
+
+    .demo-bar__label {
+      color: rgba(255,255,255,0.6);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-weight: 600;
+      font-size: 10.5px;
+    }
+
+    .demo-bar button {
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.18);
+      transition: background 120ms;
+    }
+
+    .demo-bar button:hover  { background: rgba(255,255,255,0.18); }
+    .demo-bar button.is-on  { background: var(--bs-orange); color: #1a1a1a; border-color: var(--bs-orange); }
+
+    .demo-bar__link {
+      margin-left: 6px;
+      padding-left: 12px;
+      border-left: 1px solid rgba(255,255,255,0.18);
+      color: rgba(255,255,255,0.7);
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .demo-bar__link:hover { color: #fff; }
+
+    /* ---- Responsive ---- */
+    @media (max-width: 880px) {
+      .op-grid { grid-template-columns: 1fr; }
+      .op-aside { position: static; }
+    }
+    @media (max-width: 560px) {
+      .op-header__section { display: none; }
+    }
   </style>
 </head>
 <body>
-  <header class="page-header">
-    <span class="page-header__logo">BoyleSports</span>
-    <span style="opacity: 0.85;">Match centre</span>
+
+  <!-- ========== OPERATOR HEADER (slim) ========== -->
+  <header class="op-header">
+    <div class="op-header__inner">
+      <div class="op-logo">Boyle<strong>Sports</strong></div>
+      <div class="op-header__section">Football · Premier League</div>
+    </div>
   </header>
 
-  <main class="page-main">
-    <h1>Arsenal vs Liverpool — Premier League</h1>
-    <p>Embedded widget below. The CSS variable overrides above re-tint it to the BoyleSports green/orange.</p>
+  <!-- ========== BREADCRUMB (static — context, not navigation) ========== -->
+  <div class="op-breadcrumb">
+    <span>Home</span>
+    <span class="op-breadcrumb__sep">/</span>
+    <span>Football</span>
+    <span class="op-breadcrumb__sep">/</span>
+    <span>Premier League</span>
+    <span class="op-breadcrumb__sep">/</span>
+    <span>Arsenal v Liverpool</span>
+  </div>
 
-    <!-- Widget mount point + embed tag (per spec §8.1) -->
-    <div id="sr-widget-root"></div>
+  <!-- ========== MAIN: widget + betting sidebar ========== -->
+  <main class="op-main">
+    <div class="op-grid">
 
-    <!-- Operator-supplied per-page-type config — spec §6.
-         In production this is fetched from /api/v1/config/{client}; here we
-         set it inline to demonstrate the seam and the override behaviour. -->
-    <script>
-      window.SR_CONFIG = {
-        match: {
-          tabs: [
-            { id: "league_table",   label: "Standings",     default: true  },
-            { id: "fixtures",       label: "Form",          default: false },
-            { id: "lineups",        label: "Line-ups",      default: false },
-            { id: "team_stats",     label: "Team stats",    default: false },
-            { id: "h2h",            label: "Head to head",  default: false },
-            { id: "xg_timeline",    label: "xG race",       default: false },
-            { id: "match_facts",    label: "Match facts",   default: false },
-          ],
-          options: {
-            league_table: { default_view: "overall", limit: 10 },
-          },
-        },
-      };
-    </script>
+      <!-- ---- Left: match info + widget ---- -->
+      <section class="op-content">
+        <div class="op-match-banner">
+          <div>
+            <h1 class="op-match-banner__title">Arsenal v Liverpool</h1>
+            <div class="op-match-banner__meta" id="op-match-meta">
+              Premier League · Wed 6 May 2026, 19:30 · Emirates Stadium
+            </div>
+          </div>
+          <div id="op-match-state"></div>
+        </div>
 
-    <script
-      src="/widget/loader.js"
-      data-client="boylesports"
-      data-page-type="match"
-      data-match-id="ars-liv-2026-05-06"
-      data-dev-mode="1"></script>
+        <!-- Widget mount + spec-shape embed tag -->
+        <div id="sr-widget-root"></div>
 
-    <div class="demo-controls">
-      <button onclick="srPhase('pre')">Set phase: pre</button>
-      <button onclick="srPhase('live')">Set phase: live</button>
-      <button onclick="srPhase('ft')">Set phase: ft</button>
+        <!-- Operator-side per-page-type config (spec §6).
+             In production this is fetched as /api/v1/config/{client}; here
+             we set it inline to demonstrate the seam. -->
+        <script>
+          window.SR_CONFIG = {
+            match: {
+              tabs: [
+                { id: "league_table", label: "Standings",    default: false },
+                { id: "fixtures",     label: "Form",         default: false },
+                { id: "lineups",      label: "Line-ups",     default: true  },
+                { id: "team_stats",   label: "Team stats",   default: false },
+                { id: "h2h",          label: "Head to head", default: false },
+                { id: "xg_timeline",  label: "xG race",      default: false },
+                { id: "match_facts",  label: "Match facts",  default: false },
+              ],
+              options: {
+                league_table: { default_view: "overall", limit: 10 },
+                h2h:          { depth: 5, player_selector: true },
+              },
+            },
+          };
+        </script>
+
+        <script
+          src="/widget/loader.js"
+          data-client="boylesports"
+          data-page-type="match"
+          data-match-id="ars-liv-2026-05-06"
+          data-dev-mode="1"></script>
+      </section>
+
+      <!-- ---- Right: betting markets ---- -->
+      <aside class="op-aside" aria-label="Match markets">
+        <div class="op-card">
+          <div class="op-card__head">
+            <h3 class="op-card__title">Match Result</h3>
+            <span class="op-card__hint">90 mins</span>
+          </div>
+          <ul class="op-market">
+            <li class="op-market__row is-favourite">
+              <span class="op-market__label">Arsenal</span>
+              <span class="op-market__odds">1.85</span>
+            </li>
+            <li class="op-market__row">
+              <span class="op-market__label">Draw</span>
+              <span class="op-market__odds">3.60</span>
+            </li>
+            <li class="op-market__row">
+              <span class="op-market__label">Liverpool</span>
+              <span class="op-market__odds">4.20</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="op-card">
+          <div class="op-card__head">
+            <h3 class="op-card__title">Both Teams To Score</h3>
+          </div>
+          <ul class="op-market">
+            <li class="op-market__row is-favourite">
+              <span class="op-market__label">Yes</span>
+              <span class="op-market__odds">1.55</span>
+            </li>
+            <li class="op-market__row">
+              <span class="op-market__label">No</span>
+              <span class="op-market__odds">2.40</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="op-card">
+          <div class="op-card__head">
+            <h3 class="op-card__title">Total Goals</h3>
+            <span class="op-card__hint">Over / Under 2.5</span>
+          </div>
+          <ul class="op-market">
+            <li class="op-market__row is-favourite">
+              <span class="op-market__label">Over 2.5</span>
+              <span class="op-market__odds">1.72</span>
+            </li>
+            <li class="op-market__row">
+              <span class="op-market__label">Under 2.5</span>
+              <span class="op-market__odds">2.10</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="op-card">
+          <div class="op-card__head">
+            <h3 class="op-card__title">First Goalscorer</h3>
+          </div>
+          <ul class="op-market">
+            <li class="op-market__row"><span class="op-market__label">M. Salah</span>      <span class="op-market__odds">4.50</span></li>
+            <li class="op-market__row"><span class="op-market__label">B. Saka</span>       <span class="op-market__odds">5.50</span></li>
+            <li class="op-market__row"><span class="op-market__label">D. Núñez</span>      <span class="op-market__odds">6.00</span></li>
+            <li class="op-market__row"><span class="op-market__label">K. Havertz</span>    <span class="op-market__odds">6.50</span></li>
+            <li class="op-market__row"><span class="op-market__label">G. Martinelli</span> <span class="op-market__odds">7.00</span></li>
+          </ul>
+        </div>
+      </aside>
     </div>
   </main>
 
+  <!-- ========== FOOTER (legal-only) ========== -->
+  <footer class="op-footer">
+    <div class="op-footer__inner">
+      <strong>18+</strong>
+      <span>Please gamble responsibly. BeGambleAware.org</span>
+    </div>
+  </footer>
+
+  <!-- ========== DEMO CONTROLS (floating, prototype only) ========== -->
+  <div class="demo-bar" role="region" aria-label="Prototype demo controls">
+    <span class="demo-bar__label">Phase</span>
+    <button type="button" data-phase="pre" class="is-on">Pre-match</button>
+    <button type="button" data-phase="live">Live</button>
+    <button type="button" data-phase="ft">Full time</button>
+    <a href="/config/" class="demo-bar__link">Theming tool →</a>
+  </div>
+
   <script>
-    // Helper to flip phase via the dev endpoint, then nudge the widget to
-    // refresh its context immediately rather than waiting for the next poll.
-    async function srPhase(phase) {
-      const res = await fetch(`/api/v1/_dev/phase/ars-liv-2026-05-06`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phase }),
+    // ---- Phase toggle (dev-only API) ------------------------------------
+    const buttons = document.querySelectorAll(".demo-bar [data-phase]");
+    const matchMetaEl  = document.getElementById("op-match-meta");
+    const matchStateEl = document.getElementById("op-match-state");
+
+    buttons.forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const phase = btn.dataset.phase;
+        try {
+          const res = await fetch(`/api/v1/_dev/phase/ars-liv-2026-05-06`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ phase }),
+          });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        } catch (err) {
+          alert("Phase toggle failed — is SR_DEV_MODE=1 set on the server?");
+          return;
+        }
+        buttons.forEach((b) => b.classList.toggle("is-on", b.dataset.phase === phase));
+        // Nudge the widget to refresh its context immediately rather than
+        // waiting for the next 15s context poll.
+        if (window.__srWidget) window.__srWidget._tickContext();
+        updateMatchBanner(phase);
       });
-      if (!res.ok) {
-        alert(`Phase toggle failed: HTTP ${res.status}`);
-        return;
-      }
-      if (window.__srWidget) {
-        window.__srWidget._tickContext();
+    });
+
+    function updateMatchBanner(phase) {
+      if (phase === "live") {
+        matchStateEl.innerHTML = `<span class="op-match-banner__live">Live</span>`;
+      } else if (phase === "ft") {
+        matchStateEl.innerHTML = `<span class="op-card__hint">Full time</span>`;
+      } else {
+        matchStateEl.innerHTML = "";
       }
     }
   </script>
