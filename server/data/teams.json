@@ -1,0 +1,78 @@
+{
+  "ars": {
+    "team_id": "ars", "name": "Arsenal", "short_name": "ARS", "country": "England",
+    "season_stats": {
+      "goals_per_game": 2.23, "shots_per_game": 15.8, "shots_on_target_per_game": 5.9,
+      "possession_pct": 58.2, "xg_per_game": 1.91, "xga_per_game": 0.92,
+      "clean_sheets": 12, "goals_conceded_per_game": 0.80, "corners_per_game": 6.4, "fouls_per_game": 9.8
+    },
+    "squad": [
+      {"player_id": "raya",        "name": "David Raya",        "shirt": 22, "position_group": "GK",  "season_stats": {"appearances": 33, "clean_sheets": 12, "saves": 89}},
+      {"player_id": "white",       "name": "Ben White",         "shirt": 4,  "position_group": "DEF", "season_stats": {"appearances": 31, "goals": 2, "assists": 5}},
+      {"player_id": "saliba",      "name": "William Saliba",    "shirt": 2,  "position_group": "DEF", "season_stats": {"appearances": 34, "goals": 3, "assists": 1}},
+      {"player_id": "gabriel",     "name": "Gabriel Magalhães", "shirt": 6,  "position_group": "DEF", "season_stats": {"appearances": 33, "goals": 4, "assists": 0}},
+      {"player_id": "calafiori",   "name": "Riccardo Calafiori","shirt": 33, "position_group": "DEF", "season_stats": {"appearances": 22, "goals": 1, "assists": 3}},
+      {"player_id": "timber",      "name": "Jurriën Timber",    "shirt": 12, "position_group": "DEF", "season_stats": {"appearances": 28, "goals": 1, "assists": 4}},
+      {"player_id": "kiwior",      "name": "Jakub Kiwior",      "shirt": 15, "position_group": "DEF", "season_stats": {"appearances": 18, "goals": 0, "assists": 1}},
+      {"player_id": "zinchenko",   "name": "Oleksandr Zinchenko","shirt": 17,"position_group": "DEF", "season_stats": {"appearances": 19, "goals": 0, "assists": 2}},
+      {"player_id": "rice",        "name": "Declan Rice",       "shirt": 41, "position_group": "MID", "season_stats": {"appearances": 34, "goals": 6, "assists": 8}},
+      {"player_id": "odegaard",    "name": "Martin Ødegaard",   "shirt": 8,  "position_group": "MID", "season_stats": {"appearances": 30, "goals": 9, "assists": 11}},
+      {"player_id": "merino",      "name": "Mikel Merino",      "shirt": 23, "position_group": "MID", "season_stats": {"appearances": 26, "goals": 5, "assists": 3}},
+      {"player_id": "partey",      "name": "Thomas Partey",     "shirt": 5,  "position_group": "MID", "season_stats": {"appearances": 24, "goals": 2, "assists": 2}},
+      {"player_id": "jorginho",    "name": "Jorginho",          "shirt": 20, "position_group": "MID", "season_stats": {"appearances": 18, "goals": 0, "assists": 1}},
+      {"player_id": "saka",        "name": "Bukayo Saka",       "shirt": 7,  "position_group": "FWD", "season_stats": {"appearances": 32, "goals": 14, "assists": 9, "shots_per_90": 3.2, "key_passes_per_90": 2.4, "xg": 11.8}},
+      {"player_id": "havertz",     "name": "Kai Havertz",       "shirt": 29, "position_group": "FWD", "season_stats": {"appearances": 31, "goals": 13, "assists": 6}},
+      {"player_id": "martinelli",  "name": "Gabriel Martinelli","shirt": 11, "position_group": "FWD", "season_stats": {"appearances": 29, "goals": 10, "assists": 5}},
+      {"player_id": "trossard",    "name": "Leandro Trossard",  "shirt": 19, "position_group": "FWD", "season_stats": {"appearances": 28, "goals": 8, "assists": 4}},
+      {"player_id": "jesus",       "name": "Gabriel Jesus",     "shirt": 9,  "position_group": "FWD", "season_stats": {"appearances": 21, "goals": 6, "assists": 3}},
+      {"player_id": "sterling",    "name": "Raheem Sterling",   "shirt": 30, "position_group": "FWD", "season_stats": {"appearances": 19, "goals": 4, "assists": 4}},
+      {"player_id": "nwaneri",     "name": "Ethan Nwaneri",     "shirt": 53, "position_group": "FWD", "season_stats": {"appearances": 14, "goals": 3, "assists": 1}}
+    ]
+  },
+  "liv": {
+    "team_id": "liv", "name": "Liverpool", "short_name": "LIV", "country": "England",
+    "season_stats": {
+      "goals_per_game": 2.31, "shots_per_game": 16.4, "shots_on_target_per_game": 6.1,
+      "possession_pct": 60.1, "xg_per_game": 2.04, "xga_per_game": 0.98,
+      "clean_sheets": 11, "goals_conceded_per_game": 0.91, "corners_per_game": 6.8, "fouls_per_game": 10.2
+    },
+    "squad": [
+      {"player_id": "alisson",     "name": "Alisson",                "shirt": 1,  "position_group": "GK",  "season_stats": {"appearances": 30, "clean_sheets": 11, "saves": 82}},
+      {"player_id": "kelleher",    "name": "Caoimhín Kelleher",      "shirt": 62, "position_group": "GK",  "season_stats": {"appearances": 5, "clean_sheets": 1, "saves": 12}},
+      {"player_id": "trent",       "name": "Trent Alexander-Arnold", "shirt": 66, "position_group": "DEF", "season_stats": {"appearances": 30, "goals": 3, "assists": 11}},
+      {"player_id": "vandijk",     "name": "Virgil van Dijk",        "shirt": 4,  "position_group": "DEF", "season_stats": {"appearances": 35, "goals": 4, "assists": 1}},
+      {"player_id": "konate",      "name": "Ibrahima Konaté",        "shirt": 5,  "position_group": "DEF", "season_stats": {"appearances": 27, "goals": 1, "assists": 0}},
+      {"player_id": "robertson",   "name": "Andrew Robertson",       "shirt": 26, "position_group": "DEF", "season_stats": {"appearances": 28, "goals": 1, "assists": 6}},
+      {"player_id": "tsimikas",    "name": "Kostas Tsimikas",        "shirt": 21, "position_group": "DEF", "season_stats": {"appearances": 14, "goals": 0, "assists": 3}},
+      {"player_id": "quansah",     "name": "Jarell Quansah",         "shirt": 78, "position_group": "DEF", "season_stats": {"appearances": 16, "goals": 1, "assists": 0}},
+      {"player_id": "macallister", "name": "Alexis Mac Allister",    "shirt": 10, "position_group": "MID", "season_stats": {"appearances": 33, "goals": 7, "assists": 8}},
+      {"player_id": "szoboszlai", "name": "Dominik Szoboszlai",      "shirt": 8,  "position_group": "MID", "season_stats": {"appearances": 32, "goals": 6, "assists": 7}},
+      {"player_id": "gravenberch","name": "Ryan Gravenberch",        "shirt": 38, "position_group": "MID", "season_stats": {"appearances": 31, "goals": 3, "assists": 4}},
+      {"player_id": "endo",       "name": "Wataru Endo",             "shirt": 3,  "position_group": "MID", "season_stats": {"appearances": 17, "goals": 1, "assists": 0}},
+      {"player_id": "elliott",    "name": "Harvey Elliott",          "shirt": 19, "position_group": "MID", "season_stats": {"appearances": 22, "goals": 4, "assists": 5}},
+      {"player_id": "salah",      "name": "Mohamed Salah",           "shirt": 11, "position_group": "FWD", "season_stats": {"appearances": 35, "goals": 23, "assists": 13, "shots_per_90": 4.1, "key_passes_per_90": 2.9, "xg": 19.6}},
+      {"player_id": "nunez",      "name": "Darwin Núñez",            "shirt": 9,  "position_group": "FWD", "season_stats": {"appearances": 28, "goals": 11, "assists": 4}},
+      {"player_id": "diaz",       "name": "Luis Díaz",               "shirt": 7,  "position_group": "FWD", "season_stats": {"appearances": 31, "goals": 12, "assists": 5}},
+      {"player_id": "jota",       "name": "Diogo Jota",              "shirt": 20, "position_group": "FWD", "season_stats": {"appearances": 26, "goals": 9, "assists": 3}},
+      {"player_id": "gakpo",      "name": "Cody Gakpo",              "shirt": 18, "position_group": "FWD", "season_stats": {"appearances": 29, "goals": 8, "assists": 6}}
+    ]
+  },
+  "mci": {"team_id": "mci", "name": "Manchester City",   "short_name": "MCI"},
+  "che": {"team_id": "che", "name": "Chelsea",           "short_name": "CHE"},
+  "tot": {"team_id": "tot", "name": "Tottenham Hotspur", "short_name": "TOT"},
+  "new": {"team_id": "new", "name": "Newcastle United",  "short_name": "NEW"},
+  "avl": {"team_id": "avl", "name": "Aston Villa",       "short_name": "AVL"},
+  "bha": {"team_id": "bha", "name": "Brighton",          "short_name": "BHA"},
+  "mun": {"team_id": "mun", "name": "Manchester United", "short_name": "MUN"},
+  "wes": {"team_id": "wes", "name": "West Ham United",   "short_name": "WHU"},
+  "ful": {"team_id": "ful", "name": "Fulham",            "short_name": "FUL"},
+  "bre": {"team_id": "bre", "name": "Brentford",         "short_name": "BRE"},
+  "cry": {"team_id": "cry", "name": "Crystal Palace",    "short_name": "CRY"},
+  "nfo": {"team_id": "nfo", "name": "Nottingham Forest", "short_name": "NFO"},
+  "evt": {"team_id": "evt", "name": "Everton",           "short_name": "EVE"},
+  "wol": {"team_id": "wol", "name": "Wolverhampton",     "short_name": "WOL"},
+  "bou": {"team_id": "bou", "name": "Bournemouth",       "short_name": "BOU"},
+  "lei": {"team_id": "lei", "name": "Leicester City",    "short_name": "LEI"},
+  "ips": {"team_id": "ips", "name": "Ipswich Town",      "short_name": "IPS"},
+  "sou": {"team_id": "sou", "name": "Southampton",       "short_name": "SOU"}
+}

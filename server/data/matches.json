@@ -1,0 +1,136 @@
+{
+  "ars-liv-2026-05-06": {
+    "match_id": "ars-liv-2026-05-06",
+    "competition_id": "epl",
+    "season": "2025-26",
+    "kickoff_at": "2026-05-06T19:30:00Z",
+    "venue": "Emirates Stadium",
+    "phase": "pre",
+    "status": "scheduled",
+    "minute": null,
+    "home": {"team_id": "ars", "score": null},
+    "away": {"team_id": "liv", "score": null},
+
+    "lineups": {
+      "formation": {"home": "4-3-3", "away": "4-3-3"},
+      "home": {
+        "starting_xi": ["raya","white","saliba","gabriel","calafiori","rice","odegaard","merino","saka","havertz","martinelli"],
+        "bench": ["kelleher","timber","kiwior","zinchenko","partey","jorginho","trossard","jesus","sterling"]
+      },
+      "away": {
+        "starting_xi": ["alisson","trent","konate","vandijk","robertson","macallister","szoboszlai","gravenberch","salah","nunez","diaz"],
+        "bench": ["kelleher","quansah","tsimikas","endo","elliott","jota","gakpo"]
+      },
+      "events": [
+        {"type": "goal",         "minute": 23, "team_id": "ars", "player_id": "saka",       "detail": "right-foot"},
+        {"type": "yellow_card",  "minute": 34, "team_id": "liv", "player_id": "macallister","detail": "tactical foul"},
+        {"type": "goal",         "minute": 41, "team_id": "liv", "player_id": "salah",      "detail": "penalty"},
+        {"type": "substitution", "minute": 62, "team_id": "ars", "player_id": "trossard",   "detail": "for Havertz"},
+        {"type": "goal",         "minute": 67, "team_id": "ars", "player_id": "martinelli", "detail": "left-foot"}
+      ]
+    },
+
+    "team_stats_pre": {
+      "season":      {"home": "season_default", "away": "season_default"},
+      "last5":       {"home": {"goals_per_game": 2.4, "shots_per_game": 16.2, "shots_on_target_per_game": 6.4, "possession_pct": 60.1, "xg_per_game": 2.05, "xga_per_game": 0.84, "clean_sheets": 3, "goals_conceded_per_game": 0.6, "corners_per_game": 6.8, "fouls_per_game": 9.2},
+                      "away": {"goals_per_game": 2.6, "shots_per_game": 17.0, "shots_on_target_per_game": 6.6, "possession_pct": 61.4, "xg_per_game": 2.18, "xga_per_game": 0.92, "clean_sheets": 2, "goals_conceded_per_game": 0.8, "corners_per_game": 7.0, "fouls_per_game": 10.4}},
+      "last10":      {"home": {"goals_per_game": 2.3, "shots_per_game": 15.9, "shots_on_target_per_game": 6.0, "possession_pct": 59.0, "xg_per_game": 1.96, "xga_per_game": 0.88, "clean_sheets": 5, "goals_conceded_per_game": 0.7, "corners_per_game": 6.5, "fouls_per_game": 9.6},
+                      "away": {"goals_per_game": 2.4, "shots_per_game": 16.6, "shots_on_target_per_game": 6.3, "possession_pct": 60.5, "xg_per_game": 2.10, "xga_per_game": 0.95, "clean_sheets": 4, "goals_conceded_per_game": 0.9, "corners_per_game": 6.9, "fouls_per_game": 10.0}},
+      "home_away":   {"home": {"goals_per_game": 2.5, "shots_per_game": 16.8, "shots_on_target_per_game": 6.2, "possession_pct": 60.4, "xg_per_game": 2.02, "xga_per_game": 0.78, "clean_sheets": 7, "goals_conceded_per_game": 0.65, "corners_per_game": 6.9, "fouls_per_game": 9.4},
+                      "away": {"goals_per_game": 2.1, "shots_per_game": 15.8, "shots_on_target_per_game": 5.8, "possession_pct": 58.7, "xg_per_game": 1.92, "xga_per_game": 1.05, "clean_sheets": 4, "goals_conceded_per_game": 1.0, "corners_per_game": 6.4, "fouls_per_game": 10.6}}
+    },
+
+    "team_stats_live": {
+      "minute": 67,
+      "home": {"shots": 12, "shots_on_target": 5, "possession_pct": 54, "corners": 6, "fouls": 8,  "yellow_cards": 1, "red_cards": 0, "passes": 412, "pass_accuracy_pct": 86},
+      "away": {"shots": 10, "shots_on_target": 4, "possession_pct": 46, "corners": 4, "fouls": 11, "yellow_cards": 2, "red_cards": 0, "passes": 358, "pass_accuracy_pct": 81}
+    },
+
+    "h2h": {
+      "depth": 10,
+      "summary": {"home_wins": 4, "away_wins": 3, "draws": 3, "home_goals": 14, "away_goals": 11, "avg_goals_per_game": 2.5},
+      "recent": [
+        {"match_id": "liv-ars-2026-01-12", "kickoff_at": "2026-01-12T16:30:00Z", "home": {"team_id": "liv", "score": 1}, "away": {"team_id": "ars", "score": 2}},
+        {"match_id": "ars-liv-2025-09-21", "kickoff_at": "2025-09-21T15:00:00Z", "home": {"team_id": "ars", "score": 2}, "away": {"team_id": "liv", "score": 2}},
+        {"match_id": "liv-ars-2025-04-14", "kickoff_at": "2025-04-14T16:30:00Z", "home": {"team_id": "liv", "score": 0}, "away": {"team_id": "ars", "score": 1}},
+        {"match_id": "ars-liv-2024-10-27", "kickoff_at": "2024-10-27T16:30:00Z", "home": {"team_id": "ars", "score": 1}, "away": {"team_id": "liv", "score": 1}},
+        {"match_id": "liv-ars-2024-02-04", "kickoff_at": "2024-02-04T16:30:00Z", "home": {"team_id": "liv", "score": 3}, "away": {"team_id": "ars", "score": 1}},
+        {"match_id": "ars-liv-2023-12-23", "kickoff_at": "2023-12-23T17:30:00Z", "home": {"team_id": "ars", "score": 1}, "away": {"team_id": "liv", "score": 1}},
+        {"match_id": "liv-ars-2023-04-09", "kickoff_at": "2023-04-09T16:30:00Z", "home": {"team_id": "liv", "score": 2}, "away": {"team_id": "ars", "score": 2}},
+        {"match_id": "ars-liv-2022-10-09", "kickoff_at": "2022-10-09T16:30:00Z", "home": {"team_id": "ars", "score": 3}, "away": {"team_id": "liv", "score": 2}},
+        {"match_id": "liv-ars-2022-04-20", "kickoff_at": "2022-04-20T19:00:00Z", "home": {"team_id": "liv", "score": 4}, "away": {"team_id": "ars", "score": 0}},
+        {"match_id": "ars-liv-2021-11-20", "kickoff_at": "2021-11-20T17:30:00Z", "home": {"team_id": "ars", "score": 0}, "away": {"team_id": "liv", "score": 4}}
+      ]
+    },
+
+    "xg_timeline": {
+      "minute_now": 67,
+      "home": {
+        "team_id": "ars",
+        "cumulative": [
+          {"minute": 8,  "xg": 0.12, "is_goal": false},
+          {"minute": 17, "xg": 0.31, "is_goal": false},
+          {"minute": 23, "xg": 0.78, "is_goal": true},
+          {"minute": 35, "xg": 0.92, "is_goal": false},
+          {"minute": 51, "xg": 1.18, "is_goal": false},
+          {"minute": 60, "xg": 1.34, "is_goal": false},
+          {"minute": 67, "xg": 1.91, "is_goal": true}
+        ],
+        "total_xg": 1.91
+      },
+      "away": {
+        "team_id": "liv",
+        "cumulative": [
+          {"minute": 5,  "xg": 0.09, "is_goal": false},
+          {"minute": 19, "xg": 0.28, "is_goal": false},
+          {"minute": 33, "xg": 0.44, "is_goal": false},
+          {"minute": 41, "xg": 1.20, "is_goal": true},
+          {"minute": 56, "xg": 1.38, "is_goal": false},
+          {"minute": 64, "xg": 1.55, "is_goal": false}
+        ],
+        "total_xg": 1.55
+      }
+    },
+
+    "match_facts": {
+      "match": [
+        "Arsenal have won 6 of their last 8 home league matches against Liverpool.",
+        "These two sides have produced an average of 3.2 goals per meeting in the last 5 matches.",
+        "Arsenal are unbeaten in their last 12 home league games."
+      ],
+      "team": {
+        "ars": [
+          "Arsenal have kept a clean sheet in 7 of their last 10 home matches.",
+          "Arsenal have scored first in 11 of their last 13 league fixtures.",
+          "Mikel Arteta's side average 6.4 corners per match — second-highest in the league."
+        ],
+        "liv": [
+          "Liverpool have scored in 13 consecutive away league games.",
+          "Liverpool have conceded in 9 of their last 10 away matches.",
+          "Mohamed Salah is involved in a goal every 71 minutes in the league this season."
+        ]
+      },
+      "player": {
+        "saka":      ["Saka has the highest shot accuracy in Arsenal's squad this season (54%).", "Saka has 4 goals and 3 assists in his last 6 league games."],
+        "salah":     ["Salah has scored or assisted in 27 of Liverpool's 35 league matches.", "Salah averages 4.1 shots per 90 — top in the squad."],
+        "odegaard":  ["Ødegaard has created the most chances of any Arsenal player this season (78)."],
+        "vandijk":   ["Van Dijk wins 71% of his aerial duels — the highest of any centre-back in the top six."]
+      }
+    },
+
+    "commentary": [
+      {"id": "evt-0001", "minute": 1,  "timestamp": "2026-05-06T19:30:00Z", "type": "kickoff",        "team_id": null,  "player_id": null,         "text": "1' Kick-off at the Emirates. Arsenal get us underway."},
+      {"id": "evt-0008", "minute": 8,  "timestamp": "2026-05-06T19:37:30Z", "type": "shot",           "team_id": "ars", "player_id": "saka",       "text": "8' Saka cuts inside from the right and curls one wide of the far post — early warning from Arsenal."},
+      {"id": "evt-0017", "minute": 17, "timestamp": "2026-05-06T19:46:50Z", "type": "shot",           "team_id": "ars", "player_id": "havertz",    "text": "17' Havertz rises highest from a Saka corner but heads it straight at Alisson."},
+      {"id": "evt-0019", "minute": 19, "timestamp": "2026-05-06T19:48:30Z", "type": "shot",           "team_id": "liv", "player_id": "salah",     "text": "19' Salah feeds himself into the box, drags his shot just wide of Raya's far post."},
+      {"id": "evt-0023", "minute": 23, "timestamp": "2026-05-06T19:52:50Z", "type": "goal",           "team_id": "ars", "player_id": "saka",       "text": "23' GOAL! Saka opens the scoring — slick one-two with Ødegaard, low finish into the bottom corner."},
+      {"id": "evt-0034", "minute": 34, "timestamp": "2026-05-06T20:03:14Z", "type": "yellow_card",    "team_id": "liv", "player_id": "macallister","text": "34' Booking for Mac Allister, a tactical foul on Rice as Arsenal break."},
+      {"id": "evt-0041", "minute": 41, "timestamp": "2026-05-06T20:10:50Z", "type": "goal",           "team_id": "liv", "player_id": "salah",      "text": "41' GOAL! Salah equalises from the spot after Calafiori's clumsy challenge on Núñez. Sends Raya the wrong way."},
+      {"id": "evt-0045", "minute": 45, "timestamp": "2026-05-06T20:15:00Z", "type": "half_time",      "team_id": null,  "player_id": null,         "text": "45' Half-time at the Emirates: Arsenal 1-1 Liverpool."},
+      {"id": "evt-0046", "minute": 46, "timestamp": "2026-05-06T20:30:00Z", "type": "kickoff",        "team_id": null,  "player_id": null,         "text": "46' We're back underway for the second half."},
+      {"id": "evt-0056", "minute": 56, "timestamp": "2026-05-06T20:40:30Z", "type": "shot",           "team_id": "liv", "player_id": "diaz",       "text": "56' Díaz tries his luck from distance — Raya gathers comfortably."},
+      {"id": "evt-0062", "minute": 62, "timestamp": "2026-05-06T20:46:14Z", "type": "substitution",   "team_id": "ars", "player_id": "trossard",   "text": "62' Substitution for Arsenal — Trossard on for Havertz."},
+      {"id": "evt-0067", "minute": 67, "timestamp": "2026-05-06T20:51:14Z", "type": "goal",           "team_id": "ars", "player_id": "martinelli","text": "67' GOAL! Martinelli slides home from Saka's cutback — Arsenal back in front!"}
+    ]
+  }
+}

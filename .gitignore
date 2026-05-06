@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+
+# Local config / settings (per project rule — not committed)
+*.local.json
+config.local.json
+settings.local.json
+/server/config.json
+/server/settings.json
+
+# Docker / build artifacts
+.dockerignore.local
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Conversation logs (kept outside repo, but belt-and-braces if accidentally moved in)
+/conversations/

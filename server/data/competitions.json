@@ -1,0 +1,30 @@
+{
+  "epl": {
+    "competition_id": "epl",
+    "name": "Premier League",
+    "country": "England",
+    "season": "2025-26",
+    "standings": [
+      {"position": 1,  "team_id": "ars", "played": 35, "won": 24, "drawn": 7, "lost": 4,  "goals_for": 78, "goals_against": 28, "points": 79, "form": ["W","W","D","W","W"]},
+      {"position": 2,  "team_id": "liv", "played": 35, "won": 23, "drawn": 8, "lost": 4,  "goals_for": 81, "goals_against": 32, "points": 77, "form": ["W","D","W","W","W"]},
+      {"position": 3,  "team_id": "mci", "played": 35, "won": 22, "drawn": 7, "lost": 6,  "goals_for": 75, "goals_against": 35, "points": 73, "form": ["W","W","L","W","D"]},
+      {"position": 4,  "team_id": "che", "played": 35, "won": 19, "drawn": 8, "lost": 8,  "goals_for": 64, "goals_against": 41, "points": 65, "form": ["L","W","D","W","W"]},
+      {"position": 5,  "team_id": "tot", "played": 35, "won": 18, "drawn": 7, "lost": 10, "goals_for": 68, "goals_against": 48, "points": 61, "form": ["W","W","W","L","D"]},
+      {"position": 6,  "team_id": "new", "played": 35, "won": 17, "drawn": 9, "lost": 9,  "goals_for": 58, "goals_against": 42, "points": 60, "form": ["D","W","D","W","L"]},
+      {"position": 7,  "team_id": "avl", "played": 35, "won": 16, "drawn": 9, "lost": 10, "goals_for": 55, "goals_against": 45, "points": 57, "form": ["W","L","D","W","W"]},
+      {"position": 8,  "team_id": "bha", "played": 35, "won": 14, "drawn": 11,"lost": 10, "goals_for": 52, "goals_against": 47, "points": 53, "form": ["D","W","D","L","W"]},
+      {"position": 9,  "team_id": "mun", "played": 35, "won": 14, "drawn": 8, "lost": 13, "goals_for": 49, "goals_against": 50, "points": 50, "form": ["L","W","L","D","W"]},
+      {"position": 10, "team_id": "wes", "played": 35, "won": 13, "drawn": 9, "lost": 13, "goals_for": 47, "goals_against": 51, "points": 48, "form": ["L","D","W","L","D"]},
+      {"position": 11, "team_id": "ful", "played": 35, "won": 12, "drawn": 11,"lost": 12, "goals_for": 44, "goals_against": 50, "points": 47, "form": ["D","L","W","D","W"]},
+      {"position": 12, "team_id": "bre", "played": 35, "won": 11, "drawn": 12,"lost": 12, "goals_for": 50, "goals_against": 53, "points": 45, "form": ["W","D","D","L","W"]},
+      {"position": 13, "team_id": "cry", "played": 35, "won": 11, "drawn": 11,"lost": 13, "goals_for": 41, "goals_against": 49, "points": 44, "form": ["L","W","D","D","L"]},
+      {"position": 14, "team_id": "nfo", "played": 35, "won": 10, "drawn": 12,"lost": 13, "goals_for": 40, "goals_against": 51, "points": 42, "form": ["L","D","L","W","D"]},
+      {"position": 15, "team_id": "evt", "played": 35, "won": 10, "drawn": 11,"lost": 14, "goals_for": 38, "goals_against": 52, "points": 41, "form": ["D","L","L","D","W"]},
+      {"position": 16, "team_id": "wol", "played": 35, "won": 9,  "drawn": 11,"lost": 15, "goals_for": 39, "goals_against": 56, "points": 38, "form": ["L","L","D","W","L"]},
+      {"position": 17, "team_id": "bou", "played": 35, "won": 8,  "drawn": 12,"lost": 15, "goals_for": 41, "goals_against": 60, "points": 36, "form": ["L","D","L","W","L"]},
+      {"position": 18, "team_id": "lei", "played": 35, "won": 7,  "drawn": 11,"lost": 17, "goals_for": 35, "goals_against": 62, "points": 32, "form": ["L","L","W","L","D"]},
+      {"position": 19, "team_id": "ips", "played": 35, "won": 6,  "drawn": 10,"lost": 19, "goals_for": 33, "goals_against": 68, "points": 28, "form": ["L","L","D","L","L"]},
+      {"position": 20, "team_id": "sou", "played": 35, "won": 4,  "drawn": 9, "lost": 22, "goals_for": 29, "goals_against": 75, "points": 21, "form": ["L","L","L","L","D"]}
+    ]
+  }
+}
