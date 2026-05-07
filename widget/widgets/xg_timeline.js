@@ -1,7 +1,11 @@
 /* xG race graph — vanilla SVG.
  *
- * Hidden pre-match (spec §3.3 VII). Step-line chart of cumulative xG
- * for both teams across the match timeline, with goal markers inline.
+ * Hidden pre-match (spec §3.3 VII). Cumulative xG for both teams across
+ * the match timeline; three chart styles per the spec option:
+ *   "step"   — step-line (default)
+ *   "smooth" — smooth Bézier curve through cumulative points
+ *   "bar"    — one bar per shot (cumulative xG height)
+ * Goal markers on/off via the goal_markers option.
  *
  * SVG was chosen over Chart.js because:
  *  - One chart, ~100 lines — Chart.js (~80KB) is overkill
@@ -16,11 +20,15 @@ export default {
   async mount(panelEl, ctx) {
     this.ctx = ctx;
     this.panelEl = panelEl;
+    this.chartStyle = ctx.options.chart_style || "step";
+    this.goalMarkers = ctx.options.goal_markers !== false;
     await this._fetchAndRender();
   },
 
   async update(ctx) {
     this.ctx = ctx;
+    this.chartStyle = ctx.options.chart_style || this.chartStyle;
+    this.goalMarkers = ctx.options.goal_markers !== false;
     await this._fetchAndRender();
   },
 
@@ -58,16 +66,28 @@ export default {
 
     const xScale = (m) => PAD.left + (m / minuteMax) * innerW;
     const yScale = (xg) => PAD.top + innerH - (xg / xgMax) * innerH;
+    const yBase = yScale(0);
 
-    const homePath = stepPath(data.home.cumulative, xScale, yScale);
-    const awayPath = stepPath(data.away.cumulative, xScale, yScale);
+    // Build the chart marks per the chosen style. Step = right-angle path;
+    // smooth = monotone-cubic Bézier; bar = one column per cumulative point.
+    let homeMarks, awayMarks;
+    if (this.chartStyle === "bar") {
+      homeMarks = barRects(data.home.cumulative, xScale, yScale, yBase, "home", minuteMax, innerW);
+      awayMarks = barRects(data.away.cumulative, xScale, yScale, yBase, "away", minuteMax, innerW);
+    } else {
+      const builder = this.chartStyle === "smooth" ? smoothPath : stepPath;
+      const homePath = builder(data.home.cumulative, xScale, yScale);
+      const awayPath = builder(data.away.cumulative, xScale, yScale);
+      homeMarks = `<path d="${homePath}" class="sr-xg__line sr-xg__line--home" fill="none"></path>`;
+      awayMarks = `<path d="${awayPath}" class="sr-xg__line sr-xg__line--away" fill="none"></path>`;
+    }
 
-    const homeMarkers = data.home.cumulative.filter((p) => p.is_goal).map((p) =>
+    const homeMarkers = this.goalMarkers ? data.home.cumulative.filter((p) => p.is_goal).map((p) =>
       `<circle cx="${xScale(p.minute)}" cy="${yScale(p.xg)}" r="5" class="sr-xg__goal sr-xg__goal--home"><title>Goal — ${p.minute}' (${p.xg.toFixed(2)} xG)</title></circle>`
-    ).join("");
-    const awayMarkers = data.away.cumulative.filter((p) => p.is_goal).map((p) =>
+    ).join("") : "";
+    const awayMarkers = this.goalMarkers ? data.away.cumulative.filter((p) => p.is_goal).map((p) =>
       `<circle cx="${xScale(p.minute)}" cy="${yScale(p.xg)}" r="5" class="sr-xg__goal sr-xg__goal--away"><title>Goal — ${p.minute}' (${p.xg.toFixed(2)} xG)</title></circle>`
-    ).join("");
+    ).join("") : "";
 
     const xTicks = [0, 15, 30, 45, 60, 75, 90].filter((m) => m <= minuteMax).map((m) =>
       `<g class="sr-xg__tick">
@@ -84,7 +104,18 @@ export default {
       </g>`
     ).join("");
 
+    const styleOptions = { step: "Step", smooth: "Smooth", bar: "Bars" };
+    const styleButtons = Object.entries(styleOptions).map(([id, label]) =>
+      `<button type="button" class="sr-pill sr-pill--small ${id === this.chartStyle ? "sr-pill--active" : ""}" data-style="${id}">${label}</button>`
+    ).join("");
+
     this.panelEl.innerHTML = `
+      <div class="sr-toolbar">
+        <div class="sr-pill-group sr-pill-group--secondary">${styleButtons}</div>
+        <label class="sr-xg__markers-toggle">
+          <input type="checkbox" data-markers ${this.goalMarkers ? "checked" : ""} /> Goal markers
+        </label>
+      </div>
       <div class="sr-xg">
         <div class="sr-xg__legend">
           <span class="sr-xg__legend-item"><span class="sr-xg__legend-swatch sr-xg__legend-swatch--home"></span>${escape(data.home.team_id.toUpperCase())} · ${data.home.total_xg.toFixed(2)} xG</span>
@@ -93,12 +124,24 @@ export default {
         </div>
         <svg viewBox="0 0 ${W} ${H}" class="sr-xg__chart" preserveAspectRatio="xMidYMid meet" role="img" aria-label="xG race chart">
           <g class="sr-xg__axes">${xTicks}${yTicks}</g>
-          <path d="${homePath}" class="sr-xg__line sr-xg__line--home" fill="none"></path>
-          <path d="${awayPath}" class="sr-xg__line sr-xg__line--away" fill="none"></path>
+          ${homeMarks}
+          ${awayMarks}
           ${homeMarkers}${awayMarkers}
         </svg>
       </div>
     `;
+
+    this.panelEl.querySelectorAll(".sr-pill[data-style]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        this.chartStyle = btn.dataset.style;
+        this._render(data);
+      });
+    });
+    const cb = this.panelEl.querySelector("[data-markers]");
+    if (cb) cb.addEventListener("change", () => {
+      this.goalMarkers = cb.checked;
+      this._render(data);
+    });
   },
 };
 
@@ -113,6 +156,38 @@ function stepPath(points, xScale, yScale) {
     prevY = y;
   }
   return d;
+}
+
+// Smooth path — quadratic Bézier through midpoints. Cumulative xG is
+// monotone-increasing so a smooth curve never dips below the previous point.
+function smoothPath(points, xScale, yScale) {
+  if (!points.length) return "";
+  const pts = [{ minute: 0, xg: 0 }, ...points];
+  const xy = pts.map((p) => [xScale(p.minute), yScale(p.xg)]);
+  let d = `M ${xy[0][0]} ${xy[0][1]}`;
+  for (let i = 1; i < xy.length; i++) {
+    const [x0, y0] = xy[i - 1];
+    const [x1, y1] = xy[i];
+    const cx = (x0 + x1) / 2;
+    d += ` Q ${cx} ${y0} ${x1} ${y1}`;
+  }
+  return d;
+}
+
+// Bar style — one rect per cumulative point. Width based on the spacing
+// between consecutive minutes; clipped so bars never overflow the next.
+function barRects(points, xScale, yScale, yBase, side, minuteMax, innerW) {
+  if (!points.length) return "";
+  const minMinuteGap = 2;  // visual minimum
+  return points.map((p, i) => {
+    const next = points[i + 1];
+    const span = next ? next.minute - p.minute : Math.max(minMinuteGap, 4);
+    const w = Math.max(2, (span / minuteMax) * innerW * 0.85);
+    const x = xScale(p.minute) - w / 2;
+    const y = yScale(p.xg);
+    const h = yBase - y;
+    return `<rect x="${x}" y="${y}" width="${w}" height="${h}" class="sr-xg__bar sr-xg__bar--${side}"><title>${p.minute}' · ${p.xg.toFixed(2)} xG${p.is_goal ? " · GOAL" : ""}</title></rect>`;
+  }).join("");
 }
 
 function escape(text) {

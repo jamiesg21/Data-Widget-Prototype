@@ -27,6 +27,7 @@ from server.handlers.widgets import (
     AveragePositionsHandler,
     BetPromptsHandler,
     CommentaryHandler,
+    CompetitionFixturesHandler,
     H2HHandler,
     LineupsHandler,
     MatchFactsHandler,
@@ -69,8 +70,9 @@ def make_app() -> tornado.web.Application:
         (r"/api/v1/context/competition/([^/]+)",   CompetitionContextHandler,  deps),
 
         # API — widget data
-        (r"/api/v1/competitions/([^/]+)/standings",     StandingsHandler,    deps),
-        (r"/api/v1/teams/([^/]+)/fixtures",             TeamFixturesHandler, deps),
+        (r"/api/v1/competitions/([^/]+)/standings",     StandingsHandler,           deps),
+        (r"/api/v1/competitions/([^/]+)/fixtures",      CompetitionFixturesHandler, deps),
+        (r"/api/v1/teams/([^/]+)/fixtures",             TeamFixturesHandler,        deps),
         (r"/api/v1/matches/([^/]+)/lineups",            LineupsHandler,      deps),
         (r"/api/v1/matches/([^/]+)/team-stats",         TeamStatsHandler,    deps),
         (r"/api/v1/matches/([^/]+)/h2h",                H2HHandler,          deps),

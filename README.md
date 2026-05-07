@@ -1,75 +1,153 @@
-# Data Widget Prototype
+# Sportingrisk Data Widget Prototype
 
-Configurable widget suite delivering real-time football data to betting operator websites — candidate prototype for the Sportingrisk AI Specialist role.
-
-This repo proves the architecture end-to-end: a read-only Tornado API serving mock data with a production-shaped contract, an embeddable vanilla-JS widget with a tabbed single-container model, a CSS-variable theming system, and a standalone configuration tool.
+A configurable widget suite delivering real-time football data to betting operator websites. Operators drop in a single embed tag per page template; the widget resolves context automatically, filters tabs by match phase (pre / live / full-time), and renders the relevant data. Covers 13 widget types across 4 categories with a three-level operator configuration model.
 
 ## Quick start
 
+**Without Docker:**
 ```bash
-docker-compose up
+pip install -r server/requirements.txt
+python3 server/app.py
+open http://localhost:8080
 ```
 
-Then:
+**With Docker Compose:**
+```bash
+docker-compose up
+# then open http://localhost:8080
+```
 
-| URL | What |
+## Pages available
+
+| URL | What's there |
 |---|---|
-| http://localhost:8080/example/ | Operator example match page (embedded widget) |
-| http://localhost:8080/config/  | Theming tool (live preview + CSS-variable export) |
-| http://localhost:8080/api/v1/context/match/ars-liv-2026-05-06 | API root example |
-| http://localhost:8080/healthz  | Health check |
+| `http://localhost:8080` | Landing page — links to all components |
+| `http://localhost:8080/example/` | Operator example page (match widget, pre-configured) |
+| `http://localhost:8080/config/` | Theming + config tool |
+| `http://localhost:8080/api/v1/` | REST API (see `docs/api.md`) |
+| `http://localhost:8080/healthz` | Health check |
 
 ## Project structure
 
 ```
-.
-├── server/              # Tornado app, data store, mock fixtures, cache layer
-│   ├── app.py           # Entry point, routing
-│   ├── handlers/        # API request handlers (one module per endpoint group)
-│   ├── store.py         # Data-store interface — drop-in replaceable with ClickHouse
-│   ├── cache.py         # In-memory TTL cache (Redis-compatible interface)
-│   └── data/            # JSON mock fixtures (competitions, teams, matches, fixtures)
-├── widget/              # Embedded widget bundle (loader.js + renderers + CSS)
-├── config-tool/         # Standalone theming page
-├── example/             # Example operator match page
-├── docs/api.md          # API contract — source of truth
-├── Dockerfile
-└── docker-compose.yml
+server/          Python Tornado API server — mock data + endpoints
+widget/          Vanilla JS widget (no build step, no framework)
+  core/          Orchestrator, tab container, API client, config loader
+  widgets/       One renderer per widget type (13 total)
+config-tool/     Operator theming + configuration UI (Component 3)
+example/         Polished operator example page (Component 4)
+docs/            API reference
 ```
 
-## API
+## The 13 widget types
 
-See `docs/api.md` for the full contract. Highlights:
+**General Information**
 
-- Read-only HTTP API at `/api/v1`. JSON, GET-only.
-- Every response wrapped in a `{ data, meta }` envelope with `generated_at`, `ttl_seconds`, `phase`, and `context`.
-- `Cache-Control` and deterministic `ETag` set on every response — `If-None-Match` short-circuits unchanged payloads.
-- Per-data-class TTLs (standings 300s pre / 60s live, live commentary 5s, historical H2H 3600s, etc.).
-- Designed to be drop-in replaceable with ClickHouse + cache: every endpoint maps to one wide aggregate query keyed on `competition_id` or `match_id`.
+| Widget | Phase | Description |
+|---|---|---|
+| League Table | BOTH | Standings with live position-change indicators |
+| Fixtures / Results | PRE | Next 5 upcoming + last 5 results |
+| Squad List / Line-ups | BOTH | Pre-match squad → confirmed XI → live events |
 
-## Architectural constraints
+**Stats**
 
-Mirrors §2.2 of the technical spec:
+| Widget | Phase | Description |
+|---|---|---|
+| Head-to-Head | PRE | Team comparison + player vs player |
+| Team Stats | BOTH | Season/recency filters; live match stats at kick-off |
 
-- **No user data collection.** No analytics, no tracking, no PII.
-- **Stateless / no server-side sessions.** Any session-like state lives in encrypted cookies on the client. Horizontally scalable — any request can be served by any instance.
-- **AWS-deployable.** Designed for ECS/EC2 horizontal scaling. No shared mutable state between instances.
+**Visualisation**
 
-## Phase-transition demo
+| Widget | Phase | Description |
+|---|---|---|
+| Attacking Thirds | BOTH | L/C/R channel split; switches to live at kick-off |
+| xG Race Graph | LIVE | Cumulative xG chart; hidden pre-match |
+| Shot Map | BOTH | Historical shots pre-match; live plotting in-play |
+| Pass Networks | PRE | Historical passing structure and top pairs |
+| Momentum Tracker | LIVE | 5-min rolling dominance chart; hidden pre-match |
+| Average Positions | PRE | Player average positions on pitch |
 
-To demonstrate the pre-match → in-play widget transition without rebuilding fixtures, a dev-only endpoint flips a match's phase:
+**Written**
 
-```bash
-curl -X POST http://localhost:8080/api/v1/_dev/phase/ars-liv-2026-05-06 \
-  -H "Content-Type: application/json" -d '{"phase":"live"}'
+| Widget | Phase | Description |
+|---|---|---|
+| Bet Prompts | BOTH | Data-driven pre-match prompts; event-triggered in-play |
+| Match Facts / Commentary | BOTH | Fact cards pre-match; live vidi-printer commentary |
+
+## Widget availability by page type
+
+| Widget | Match | Competition | Homepage |
+|---|---|---|---|
+| League Table | Yes | Yes | Pinned |
+| Fixtures / Results | Yes | Yes | Pinned |
+| Line-ups | Yes | — | Pinned |
+| Head-to-Head | Yes | — | — |
+| Team Stats | Yes | — | Pinned |
+| Attacking Thirds | Yes | — | — |
+| xG Race Graph | Yes (live only) | — | — |
+| Shot Map | Yes | — | — |
+| Pass Networks | Yes | — | — |
+| Momentum Tracker | Yes (live only) | — | — |
+| Average Positions | Yes | — | — |
+| Bet Prompts | Yes | — | — |
+| Match Facts / Commentary | Yes | — | — |
+
+Homepage widgets use a `pinned` context (a specific `match_id` or `competition_id`) set in `SR_CONFIG`.
+
+## Operator configuration
+
+Three customisation levels (mirrors spec §6):
+
+- **L1** — Which widgets to enable per page type (tab list)
+- **L2** — Tab visibility and which tab is shown by default
+- **L3** — Per-widget behaviour options (row counts, chart styles, polling intervals, etc.)
+
+Config is read from `window.SR_CONFIG` if present; otherwise the widget falls back to the defaults in `widget/core/config.js`. In production this becomes a server-side fetch: `GET /api/v1/config/{data-client}`.
+
+**Embed snippet:**
+```html
+<!-- Match page template -->
+<div id="sr-widget-root"></div>
+<script src="https://widgets.sportingrisk.com/v1/loader.js"
+  data-client="your-operator-id"
+  data-page-type="match"
+  data-match-id="{{page.match_id}}">
+</script>
+
+<!-- Optional: override config -->
+<script>
+window.SR_CONFIG = {
+  match: {
+    tabs: [{ id: "league_table", label: "Standings", default: true }],
+    options: {
+      league_table: { limit: 10, default_view: "overall" }
+    }
+  }
+};
+</script>
 ```
 
-Gated by `SR_DEV_MODE=1` (set in `docker-compose.yml`). Disabled in production builds.
+## Theming
 
-## Tech
+Operators override CSS custom properties — no build step required:
 
-| Component | Stack |
-|---|---|
-| API server | Python 3.12, Tornado 6 (async) |
-| Widget + config tool | Vanilla JavaScript, CSS custom properties |
-| Containerisation | Docker / Docker Compose |
+```css
+.sr-widget {
+  --sr-color-primary: #2d5c2e;
+  --sr-color-secondary: #f5a623;
+  --sr-font-family: 'Roboto', sans-serif;
+  --sr-border-radius: 6px;
+}
+```
+
+The config tool at `/config/` provides a live preview and exports the CSS variable block ready to paste.
+
+## Architecture notes
+
+- **API server:** Python / Tornado (async). Mock data store designed to be swapped for ClickHouse + Redis in production. Every endpoint maps to one wide aggregate query keyed on `competition_id` or `match_id`.
+- **Widget:** Vanilla ES modules — no framework, no build step, no bundler required.
+- **Stateless:** No server-side sessions, no user data collected. Horizontally scalable.
+- **Live data:** Client-side polling per widget on configurable intervals. Active tab drives the poll rate (commentary at 5 s, line-ups at 30 s, standings at 60 s). Polling only runs when the match phase is `live`.
+- **Context polling:** Match context refreshes every 15 s. Phase transitions (pre → live → ft) update the header in place, show/hide phase-restricted tabs, and trigger a re-fetch on all mounted renderers.
+- **Caching:** Deterministic ETags + per-data-class TTLs on the server. `If-None-Match` short-circuits unchanged payloads.
+- **Dev mode:** `SR_DEV_MODE=1` (set in `docker-compose.yml`) enables `POST /api/v1/_dev/phase/{match_id}` for toggling match phase without a real data feed — used by the example page demo controls. Disabled in production.

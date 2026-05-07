@@ -17,19 +17,29 @@ export default {
   },
 
   async _fetchAndRender() {
+    // Two scopes per spec §3.1 II: focal-team fixtures (match context — focal
+    // team is the home side) or competition-wide fixtures (competition or
+    // match-less context). Detection uses the resolved context shape.
     const teamId = this.ctx.context.home?.team_id;
-    if (!teamId) {
-      this.panelEl.innerHTML = `<div class="sr-widget__error">No team in context</div>`;
-      return;
-    }
+    const competitionId = this.ctx.context.competition_id;
     const upcoming = this.ctx.options.upcoming ?? 5;
     const past = this.ctx.options.past ?? 5;
 
     this.panelEl.innerHTML = `<div class="sr-widget__loading">Loading fixtures…</div>`;
 
     try {
-      const env = await this.ctx.api.get(`/teams/${encodeURIComponent(teamId)}/fixtures`, { upcoming, past });
-      this._render(env.data, teamId);
+      let env, focal;
+      if (teamId) {
+        env = await this.ctx.api.get(`/teams/${encodeURIComponent(teamId)}/fixtures`, { upcoming, past });
+        focal = teamId;
+      } else if (competitionId) {
+        env = await this.ctx.api.get(`/competitions/${encodeURIComponent(competitionId)}/fixtures`, { upcoming, past });
+        focal = null;  // no focal team at competition scope — no row highlight or W/L chip
+      } else {
+        this.panelEl.innerHTML = `<div class="sr-widget__error">No team or competition in context</div>`;
+        return;
+      }
+      this._render(env.data, focal);
     } catch (err) {
       this.panelEl.innerHTML = `<div class="sr-widget__error">Failed to load fixtures — ${escape(err.message)}</div>`;
     }
@@ -62,16 +72,21 @@ export default {
     const score = isPast
       ? `<span class="sr-fixtures__score">${home.score}-${away.score}</span>`
       : `<span class="sr-fixtures__time">${time}</span>`;
-    const result = isPast ? `<span class="sr-fixtures__result sr-fixtures__result--${(m.result || "").toLowerCase()}">${escape(m.result || "")}</span>` : "";
+    // Result chip is focal-team-perspective; competition scope has no result field.
+    const result = isPast && m.result
+      ? `<span class="sr-fixtures__result sr-fixtures__result--${m.result.toLowerCase()}">${escape(m.result)}</span>`
+      : "";
 
-    const focalIsHome = home.team_id === focalTeamId;
+    const hasFocal = !!focalTeamId;
+    const focalIsHome = hasFocal && home.team_id === focalTeamId;
+    const focalIsAway = hasFocal && away.team_id === focalTeamId;
     return `
       <li class="sr-fixtures__row">
         <span class="sr-fixtures__date">${date}</span>
         <span class="sr-fixtures__teams">
           <span class="sr-fixtures__team ${focalIsHome ? "is-focal" : ""}">${escape(home.short_name)}</span>
           ${score}
-          <span class="sr-fixtures__team ${!focalIsHome ? "is-focal" : ""}">${escape(away.short_name)}</span>
+          <span class="sr-fixtures__team ${focalIsAway ? "is-focal" : ""}">${escape(away.short_name)}</span>
         </span>
         ${result}
       </li>

@@ -212,6 +212,172 @@ body {
   min-width: 160px;
 }
 
+/* ---- Layout section (page type + tab list) ---- */
+
+.ct-pagetype {
+  display: inline-flex;
+  background: var(--ct-bg);
+  border-radius: var(--ct-radius);
+  padding: 3px;
+  gap: 2px;
+  margin-bottom: 12px;
+  width: 100%;
+}
+
+.ct-pagetype__btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 10px;
+  color: var(--ct-text-muted);
+  cursor: pointer;
+  border-radius: calc(var(--ct-radius) - 2px);
+  transition: background 120ms, color 120ms;
+}
+
+.ct-pagetype__btn:hover { color: var(--ct-text); }
+
+.ct-pagetype__btn--active {
+  background: var(--ct-surface);
+  color: var(--ct-text);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+}
+
+.ct-tab-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ct-tab-row {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border: 1px solid var(--ct-border);
+  border-radius: 6px;
+  background: var(--ct-surface);
+  font-size: 13px;
+}
+
+/* Homepage rows have an extra pinned-context dropdown — wrap to a 2nd line
+   so the label / default radio stay readable on narrow sidebars. */
+.ct-tab-row:has(.ct-tab-row__pinned) {
+  grid-template-columns: auto auto 1fr auto;
+  grid-template-areas:
+    "reorder check label  default"
+    "pinned  pinned pinned pinned";
+  row-gap: 6px;
+}
+.ct-tab-row:has(.ct-tab-row__pinned) .ct-tab-row__reorder { grid-area: reorder; }
+.ct-tab-row:has(.ct-tab-row__pinned) .ct-tab-row__check   { grid-area: check; }
+.ct-tab-row:has(.ct-tab-row__pinned) .ct-tab-row__label   { grid-area: label; }
+.ct-tab-row:has(.ct-tab-row__pinned) .ct-tab-row__default { grid-area: default; }
+.ct-tab-row:has(.ct-tab-row__pinned) .ct-tab-row__pinned  { grid-area: pinned; }
+
+.ct-tab-row--disabled {
+  opacity: 0.55;
+  background: var(--ct-bg);
+}
+
+.ct-tab-row__reorder {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.ct-tab-row__btn {
+  background: transparent;
+  border: 1px solid var(--ct-border);
+  border-radius: 3px;
+  padding: 0;
+  width: 18px;
+  height: 14px;
+  font-size: 9px;
+  color: var(--ct-text-muted);
+  cursor: pointer;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ct-tab-row__btn:hover:not(:disabled) {
+  background: var(--ct-bg);
+  color: var(--ct-text);
+}
+
+.ct-tab-row__btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.ct-tab-row__check input,
+.ct-tab-row__default input {
+  cursor: pointer;
+  margin: 0;
+}
+
+.ct-tab-row__label {
+  font-weight: 500;
+}
+
+.ct-tab-row__default {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--ct-text-muted);
+  cursor: pointer;
+}
+
+.ct-tab-row__default input:disabled + span {
+  opacity: 0.4;
+}
+
+.ct-tab-row__pinned {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--ct-text-muted);
+  margin-top: 2px;
+}
+
+.ct-tab-row__pinned-label {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+
+.ct-tab-row__pinned select {
+  font-family: inherit;
+  font-size: 12px;
+  padding: 3px 6px;
+  border: 1px solid var(--ct-border);
+  border-radius: 4px;
+  background: var(--ct-bg);
+  color: var(--ct-text);
+  flex: 1;
+  min-width: 0;
+}
+
+.ct-tab-row__pinned select:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ct-layout__hint {
+  margin: 12px 0 0;
+  font-size: 11px;
+  color: var(--ct-text-muted);
+  line-height: 1.4;
+}
+
 /* ---- Output ---- */
 
 .ct-output {
@@ -238,6 +404,39 @@ body {
 .ct-output__actions {
   display: flex;
   gap: 8px;
+}
+
+.ct-output__blocks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 880px) {
+  .ct-output__blocks { grid-template-columns: 1fr; }
+}
+
+.ct-output__block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ct-output__sub-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.ct-output__sub-head h4 {
+  margin: 0;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ct-text-muted);
+  font-weight: 700;
 }
 
 .ct-btn {

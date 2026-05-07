@@ -111,6 +111,8 @@ Resolves a match ID into its full context.
 
 When `phase` is `"live"`: `minute` is an integer (1–90+), `score.home` and `score.away` are integers, `status` is `"in_play"`.
 
+**Note on "odds context":** the spec (§2.4) lists "odds context" among what the match-context endpoint resolves. The data widget API itself does not return bookmaker odds — per the brief, live odds are integrated on the operator side. What this endpoint provides is the structural metadata an operator's odds engine needs to look up its own prices: `match_id`, `competition_id`, both `team_id`s, `kickoff_at`, and current `phase`/`status`. Anything beyond that lives in the operator's odds service.
+
 ### `GET /api/v1/context/competition/{competition_id}`
 
 ```json
@@ -120,6 +122,21 @@ When `phase` is `"live"`: `minute` is an integer (1–90+), `score.home` and `sc
   "country": "England",
   "season": "2025-26"
 }
+```
+
+### Homepage context (no URL ID)
+
+Homepage embeds carry `data-page-type="homepage"` and no ID. Each enabled tab in `SR_CONFIG.homepage.tabs[]` carries its own pinned context — the widget calls `/context/match/{id}` or `/context/competition/{id}` per tab and resolves them in parallel before mounting renderers. Pinned match contexts are also re-polled so phase transitions on a homepage's pinned live match propagate without a page reload.
+
+```js
+window.SR_CONFIG = {
+  homepage: {
+    tabs: [
+      { id: "league_table", default: true,  pinned: { competition_id: "epl" } },
+      { id: "match_facts",  default: false, pinned: { match_id: "ars-liv-2026-05-06" } }
+    ]
+  }
+};
 ```
 
 ---
@@ -155,7 +172,11 @@ All widget endpoints take their primary ID (`competition_id` / `match_id` / `tea
 
 `position_change` is `+/-` movement since kick-off of any active in-play match. Drives the "position-change indicator" specified in §3.1 of the technical spec. `0` when no in-play match affects the table.
 
-### 3.2 Fixtures / results — `GET /api/v1/teams/{team_id}/fixtures`
+### 3.2 Fixtures / results
+
+Per spec §3.1 II — fixtures resolve at either team or competition scope. The widget picks the endpoint based on the resolved context shape.
+
+#### `GET /api/v1/teams/{team_id}/fixtures`
 
 | Query param | Values | Default |
 |---|---|---|
@@ -185,6 +206,40 @@ All widget endpoints take their primary ID (`competition_id` / `match_id` / `tea
       "away": { "team_id": "bha", "short_name": "BHA", "score": 1 },
       "result": "W",
       "venue": "home"
+    }
+  ]
+}
+```
+
+#### `GET /api/v1/competitions/{competition_id}/fixtures`
+
+| Query param | Values | Default |
+|---|---|---|
+| `upcoming` | int 0–10 | 5 |
+| `past` | int 0–10 | 5 |
+
+Aggregates across every team in the competition, deduped by `match_id`. `result` and `venue` are dropped — they're focal-team-perspective and don't apply at competition scope.
+
+**Response `data`:**
+```json
+{
+  "competition_id": "epl",
+  "upcoming": [
+    {
+      "match_id": "ars-liv-2026-05-06",
+      "competition_id": "epl",
+      "kickoff_at": "2026-05-06T19:30:00Z",
+      "home": { "team_id": "ars", "short_name": "ARS" },
+      "away": { "team_id": "liv", "short_name": "LIV" }
+    }
+  ],
+  "past": [
+    {
+      "match_id": "liv-tot-2026-04-27",
+      "competition_id": "epl",
+      "kickoff_at": "2026-04-27T16:30:00Z",
+      "home": { "team_id": "liv", "short_name": "LIV", "score": 3 },
+      "away": { "team_id": "tot", "short_name": "TOT", "score": 1 }
     }
   ]
 }

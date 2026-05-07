@@ -6,9 +6,20 @@
  *
  * Inner tabs let the user filter facts by category, and switch to
  * commentary when the match is live.
+ *
+ * Options (per spec):
+ *   facts_per_section      — N items shown per fact category (default 3)
+ *   commentary_limit       — feed depth (default 25)
+ *   commentary_detail      — "summary" (key events only) | "full" (all events)
  */
 
 const FACT_CATEGORY_LABELS = { match: "Match", team: "Team", player: "Player" };
+
+// Commentary types treated as "key events" for the summary detail level.
+const KEY_EVENT_TYPES = new Set([
+  "goal", "yellow_card", "red_card", "substitution",
+  "kickoff", "half_time", "full_time",
+]);
 
 export default {
   async mount(panelEl, ctx) {
@@ -16,12 +27,17 @@ export default {
     this.panelEl = panelEl;
     this.factCategory = "match";
     this.viewMode = "facts";  // "facts" | "commentary"
+    this.factsPerSection = ctx.options.facts_per_section ?? 3;
     this.commentaryLimit = ctx.options.commentary_limit || 25;
+    this.commentaryDetail = ctx.options.commentary_detail || "full";  // "summary" | "full"
     await this._fetchAndRender();
   },
 
   async update(ctx) {
     this.ctx = ctx;
+    this.factsPerSection = ctx.options.facts_per_section ?? this.factsPerSection;
+    this.commentaryDetail = ctx.options.commentary_detail || this.commentaryDetail;
+    this.commentaryLimit = ctx.options.commentary_limit || this.commentaryLimit;
     await this._fetchAndRender();
   },
 
@@ -80,23 +96,32 @@ export default {
   },
 
   _factsFor(data, category) {
-    if (category === "match") return data.match || [];
+    const limit = Math.max(1, this.factsPerSection || 3);
+    if (category === "match") return (data.match || []).slice(0, limit);
     if (category === "team") {
-      // Flatten all team facts.
+      // Cap each team's list separately so the section never gets dominated
+      // by one squad's facts (3 per team default per spec).
       return Object.entries(data.team || {}).flatMap(([teamId, items]) =>
-        items.map((it) => `[${teamId.toUpperCase()}] ${it}`)
+        items.slice(0, limit).map((it) => `[${teamId.toUpperCase()}] ${it}`)
       );
     }
     if (category === "player") {
       return Object.entries(data.player || {}).flatMap(([playerId, items]) =>
-        items.map((it) => `${it}`)
+        items.slice(0, limit).map((it) => `${it}`)
       );
     }
     return [];
   },
 
   _renderCommentary(data, phase) {
-    const items = (data.items || []).map((c) => `
+    // Apply detail-level filter client-side. Server returns the full feed;
+    // "summary" trims to key events only (goals, cards, subs, kickoff/HT/FT).
+    const all = data.items || [];
+    const filtered = this.commentaryDetail === "summary"
+      ? all.filter((c) => KEY_EVENT_TYPES.has(c.type))
+      : all;
+
+    const items = filtered.map((c) => `
       <li class="sr-feed__item sr-feed__item--${escape(c.type)}">
         <span class="sr-feed__minute">${c.minute}'</span>
         <span class="sr-feed__text">${escape(c.text)}</span>
@@ -104,11 +129,18 @@ export default {
     `).join("");
 
     const switchBack = `<button type="button" class="sr-pill" data-mode="facts">← Match facts</button>`;
+    const detailToggle = `
+      <div class="sr-pill-group sr-pill-group--secondary">
+        <button type="button" class="sr-pill sr-pill--small ${this.commentaryDetail === "summary" ? "sr-pill--active" : ""}" data-detail="summary">Key events</button>
+        <button type="button" class="sr-pill sr-pill--small ${this.commentaryDetail === "full"    ? "sr-pill--active" : ""}" data-detail="full">All</button>
+      </div>
+    `;
     const minuteBadge = data.minute_now ? `<span class="sr-feed__live">● ${data.minute_now}'</span>` : "";
 
     this.panelEl.innerHTML = `
       <div class="sr-toolbar">
         ${switchBack}
+        ${detailToggle}
         ${minuteBadge}
       </div>
       <ul class="sr-feed">${items || `<li class="sr-feed__empty">No commentary yet.</li>`}</ul>
@@ -116,6 +148,12 @@ export default {
 
     const back = this.panelEl.querySelector('.sr-pill[data-mode="facts"]');
     if (back) back.addEventListener("click", () => { this.viewMode = "facts"; this._fetchAndRender(); });
+    this.panelEl.querySelectorAll(".sr-pill[data-detail]").forEach((b) => {
+      b.addEventListener("click", () => {
+        this.commentaryDetail = b.dataset.detail;
+        this._renderCommentary(data, phase);
+      });
+    });
   },
 };
 

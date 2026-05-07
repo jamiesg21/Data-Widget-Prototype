@@ -3,6 +3,21 @@
  * Resolves context, renders the shell (header + tabs), mounts widget
  * renderers as tabs are activated, and drives polling for live tabs.
  *
+ * Tabs are pre-fetched in parallel after the shell renders (spec §2.3) —
+ * each renderer mounts into its hidden panel so the first click on any
+ * tab feels instant. Mounts are idempotent (promise-cached) so the
+ * default tab's activation and the prefetch loop share the same fetch.
+ *
+ * Context model (spec §2.4):
+ *   - Match page    → one match context, fetched once and re-polled.
+ *   - Competition   → one competition context, fetched once.
+ *   - Homepage      → no URL context. Each tab carries its own pinned
+ *                     { competition_id } or { match_id } in SR_CONFIG;
+ *                     each pinned context is resolved separately and
+ *                     stored per-tab in _contextByTab. Pinned match
+ *                     contexts are re-polled so phase transitions for
+ *                     a homepage's pinned live match still propagate.
+ *
  * Phase transitions (pre → live → ft) are handled by the context-poll
  * loop: when the phase changes, the header updates in place, hidden
  * tabs become visible (or vice-versa), and active widgets re-fetch.
@@ -14,7 +29,20 @@ import { renderHeader, updateHeader } from "./header.js";
 import { TabContainer } from "./tabs.js";
 
 const CONTEXT_POLL_MS = 15000;     // refresh match context every 15s
-const LIVE_DATA_POLL_MS = 10000;   // refresh active live tab every 10s
+
+// Per-widget default poll intervals (ms) for live data — match the server's
+// per-data-class TTLs (see server/store.py). Operators override these via
+// SR_CONFIG.{pageType}.options.{tabId}.poll_ms (spec §2.5.1, §2.5.3).
+// Pre-match-only widgets have 0 → no live polling needed.
+const DEFAULT_POLL_MS = {
+  league_table: 60000,    // standings: position changes are slow
+  fixtures:     0,        // pre-match only
+  lineups:      30000,    // formation events: goals / cards / subs
+  team_stats:   30000,    // live match stats: possession / shots
+  h2h:          0,        // pre-match only
+  xg_timeline:  15000,    // shots a few times a minute at most
+  match_facts:  5000,     // live commentary feed (matches server TTL)
+};
 
 // Per-tab phase restrictions.  "pre" = shown only pre-match; "live" = shown
 // only when in-play.  Tabs not listed here are always visible.
@@ -51,9 +79,11 @@ export class Widget {
     this.devMode = devMode;
 
     this.config = loadConfig(pageType);
-    this.context = null;            // current resolved context (match or competition)
+    this.context = null;            // top-level context (match or competition); placeholder for homepage
     this.tabContainer = null;
     this.renderers = new Map();     // tab id -> { mount, update, destroy }
+    this._mountPromises = new Map();// tab id -> in-flight (or settled) mount promise
+    this._contextByTab = new Map(); // tab id -> resolved context (per-tab pinned for homepage)
     this._contextTimer = null;
     this._dataTimer = null;
   }
@@ -66,6 +96,7 @@ export class Widget {
       await this._resolveContext();
       this._renderShell();
       this._scheduleContextPoll();
+      this._prefetchVisibleTabs();
     } catch (err) {
       console.error("[sr-widget] failed to start", err);
       this.rootEl.innerHTML = `<div class="sr-widget__error">Widget failed to load — ${escape(err.message)}</div>`;
@@ -80,8 +111,40 @@ export class Widget {
       const env = await this.api.get(`/context/competition/${encodeURIComponent(this.competitionId)}`);
       this.context = env.data;
     } else {
+      // Homepage — no URL context. Pre-resolve each tab's pinned context
+      // (spec §2.4.5) in parallel so renderers can read it on mount.
       this.context = { page_type: "homepage" };
+      await this._resolvePinnedContexts();
     }
+  }
+
+  // Resolves SR_CONFIG.homepage.tabs[].pinned for every tab that has one,
+  // populating _contextByTab. Failures are logged but don't abort the
+  // widget — affected tabs will fall back to the placeholder context and
+  // their renderer will surface its own error.
+  async _resolvePinnedContexts() {
+    const promises = [];
+    for (const tab of this.config.tabs) {
+      if (!tab.pinned) continue;
+      promises.push(
+        this._fetchPinnedContext(tab.pinned)
+          .then((ctx) => { if (ctx) this._contextByTab.set(tab.id, ctx); })
+          .catch((err) => console.warn(`[sr-widget] pinned-context fetch failed for ${tab.id}`, err))
+      );
+    }
+    await Promise.all(promises);
+  }
+
+  async _fetchPinnedContext(pinned) {
+    if (pinned.match_id) {
+      const env = await this.api.get(`/context/match/${encodeURIComponent(pinned.match_id)}`);
+      return env.data;
+    }
+    if (pinned.competition_id) {
+      const env = await this.api.get(`/context/competition/${encodeURIComponent(pinned.competition_id)}`);
+      return env.data;
+    }
+    return null;
   }
 
   _renderShell() {
@@ -115,22 +178,50 @@ export class Widget {
   }
 
   async _activateTab(tabId, panelEl) {
-    let renderer = this.renderers.get(tabId);
-    if (!renderer) {
-      renderer = await this._loadRenderer(tabId);
+    await this._mountRenderer(tabId, panelEl);
+    this._scheduleDataPoll();
+  }
+
+  // Idempotent mount — repeated calls for the same tabId return the same
+  // in-flight (or settled) promise, so the default-tab activation and the
+  // prefetch loop don't double-fetch.
+  _mountRenderer(tabId, panelEl) {
+    if (this._mountPromises.has(tabId)) return this._mountPromises.get(tabId);
+
+    const promise = (async () => {
+      const renderer = await this._loadRenderer(tabId);
       if (!renderer) {
         panelEl.innerHTML = `<div class="sr-widget__error">No renderer for "${escape(tabId)}"</div>`;
-        return;
+        return null;
       }
-      this.renderers.set(tabId, renderer);
       try {
         await renderer.mount(panelEl, this._rendererContext(tabId));
+        this.renderers.set(tabId, renderer);
+        return renderer;
       } catch (err) {
         console.error(`[sr-widget] mount failed for ${tabId}`, err);
         panelEl.innerHTML = `<div class="sr-widget__error">Failed to load — ${escape(err.message)}</div>`;
+        return null;
+      }
+    })();
+    this._mountPromises.set(tabId, promise);
+    return promise;
+  }
+
+  // Mount every visible tab in parallel after the shell is up. Hidden
+  // panels (display: none) accept innerHTML fine; the active panel paints
+  // first because it's the only one visible. SVG charts use a fixed
+  // viewBox so they scale correctly when their panel becomes visible.
+  _prefetchVisibleTabs() {
+    if (!this.tabContainer) return;
+    for (const tab of this._visibleTabs()) {
+      const panelEl = this.tabContainer.panelFor(tab.id);
+      if (panelEl) {
+        this._mountRenderer(tab.id, panelEl).catch((err) => {
+          console.warn(`[sr-widget] prefetch failed for ${tab.id}`, err);
+        });
       }
     }
-    this._scheduleDataPoll();
   }
 
   async _loadRenderer(tabId) {
@@ -173,9 +264,11 @@ export class Widget {
   }
 
   _rendererContext(tabId) {
+    // Per-tab context (homepage pinned) wins; otherwise the page-level context.
+    const context = this._contextByTab.get(tabId) || this.context;
     return {
       api: this.api,
-      context: this.context,
+      context,
       options: this.config.options[tabId] || {},
       pageType: this.pageType,
     };
@@ -187,17 +280,53 @@ export class Widget {
   }
 
   async _tickContext() {
-    if (this.pageType !== "match") return;
-    try {
-      const env = await this.api.get(`/context/match/${encodeURIComponent(this.matchId)}`);
-      const previousPhase = this.context.phase;
-      this.context = env.data;
-      if (this._headerEl) updateHeader(this._headerEl, this.context);
-      if (this.context.phase !== previousPhase) {
-        this._onPhaseChange(previousPhase, this.context.phase);
+    if (this.pageType === "match") {
+      try {
+        const env = await this.api.get(`/context/match/${encodeURIComponent(this.matchId)}`);
+        const previousPhase = this.context.phase;
+        this.context = env.data;
+        if (this._headerEl) updateHeader(this._headerEl, this.context);
+        if (this.context.phase !== previousPhase) {
+          this._onPhaseChange(previousPhase, this.context.phase);
+        }
+      } catch (err) {
+        console.warn("[sr-widget] context refresh failed", err);
       }
-    } catch (err) {
-      console.warn("[sr-widget] context refresh failed", err);
+    } else if (this.pageType === "homepage") {
+      await this._refreshPinnedContexts();
+    }
+    // Competition page-type has no phase/score to track here — standings
+    // changes propagate via the live data poll on the active tab.
+  }
+
+  // Re-fetch every pinned context. If a pinned match flipped phase, run
+  // update() on the corresponding renderer so its panel reflects the new
+  // state (e.g. pre-match → live transition while sitting on the homepage).
+  async _refreshPinnedContexts() {
+    const phaseChangedTabs = [];
+    const promises = [];
+    for (const tab of this.config.tabs) {
+      if (!tab.pinned) continue;
+      const previous = this._contextByTab.get(tab.id);
+      const previousPhase = previous?.phase;
+      promises.push(
+        this._fetchPinnedContext(tab.pinned)
+          .then((ctx) => {
+            if (!ctx) return;
+            this._contextByTab.set(tab.id, ctx);
+            if (ctx.phase !== previousPhase) phaseChangedTabs.push(tab.id);
+          })
+          .catch((err) => console.warn(`[sr-widget] pinned refresh failed for ${tab.id}`, err))
+      );
+    }
+    await Promise.all(promises);
+    for (const tabId of phaseChangedTabs) {
+      const renderer = this.renderers.get(tabId);
+      if (renderer && renderer.update) {
+        renderer.update(this._rendererContext(tabId)).catch((err) =>
+          console.warn(`[sr-widget] update failed for ${tabId}`, err)
+        );
+      }
     }
   }
 
@@ -218,13 +347,32 @@ export class Widget {
 
   _scheduleDataPoll() {
     if (this._dataTimer) clearInterval(this._dataTimer);
-    this._dataTimer = setInterval(() => this._tickData(), LIVE_DATA_POLL_MS);
+    const interval = this._pollIntervalForTab(this.tabContainer?.activeId);
+    if (interval > 0) {
+      this._dataTimer = setInterval(() => this._tickData(), interval);
+    }
+  }
+
+  // Per-widget poll interval — operator override wins, then per-widget default,
+  // then 0 (no polling). Called on every tab activation so switching tabs
+  // re-rates the timer (commentary 5s, season-stats 30s, standings 60s, etc.).
+  _pollIntervalForTab(tabId) {
+    if (!tabId) return 0;
+    const opts = this.config.options[tabId] || {};
+    if (typeof opts.poll_ms === "number") return Math.max(0, opts.poll_ms);
+    return DEFAULT_POLL_MS[tabId] || 0;
   }
 
   async _tickData() {
-    if (this.context?.phase !== "live") return; // only poll widgets while live
+    // Poll the active tab's renderer if its context is live. For match
+    // page-type, that's the page-level context; for homepage, it's the
+    // pinned context for the active tab.
     const activeId = this.tabContainer?.activeId;
-    const renderer = activeId ? this.renderers.get(activeId) : null;
+    if (!activeId) return;
+    const activeContext = this._contextByTab.get(activeId) || this.context;
+    if (activeContext?.phase !== "live") return;
+
+    const renderer = this.renderers.get(activeId);
     if (renderer && renderer.update) {
       try {
         await renderer.update(this._rendererContext(activeId));

@@ -80,6 +80,17 @@ export default {
       <button type="button" class="sr-pill ${id === this.recency ? "sr-pill--active" : ""}" data-recency="${id}">${label}</button>
     `).join("");
 
+    // Category filter (spec §3.2 V option). Hidden in the live tab — live
+    // match stats don't carry the same attacking/defensive split.
+    const categoryOptions = { all: "All", attacking: "Attacking", defensive: "Defensive" };
+    const categoryButtons = this.recency === "live"
+      ? ""
+      : `<div class="sr-pill-group sr-pill-group--secondary">
+          ${Object.entries(categoryOptions).map(([id, label]) =>
+            `<button type="button" class="sr-pill sr-pill--small ${id === this.categories ? "sr-pill--active" : ""}" data-cat="${id}">${label}</button>`
+          ).join("")}
+        </div>`;
+
     const home = data.home.stats;
     const away = data.away.stats;
     const keys = Object.keys({ ...home, ...away });
@@ -93,6 +104,7 @@ export default {
         <div class="sr-pill-group">${recencyButtons}</div>
         ${liveMinute}
       </div>
+      ${categoryButtons}
       <table class="sr-stats">
         <thead>
           <tr>
@@ -108,6 +120,12 @@ export default {
     this.panelEl.querySelectorAll(".sr-pill[data-recency]").forEach((btn) => {
       btn.addEventListener("click", () => {
         this.recency = btn.dataset.recency;
+        this._fetchAndRender();
+      });
+    });
+    this.panelEl.querySelectorAll(".sr-pill[data-cat]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        this.categories = btn.dataset.cat;
         this._fetchAndRender();
       });
     });

@@ -47,9 +47,17 @@ export default {
     const rows = data.rows.map((row) => {
       const isHighlighted = highlightSet.has(row.team.team_id);
       const formCells = (row.form || []).map((r) => `<span class="sr-form sr-form--${r.toLowerCase()}">${escape(r)}</span>`).join("");
+      // Position-change indicator (spec §3.1 I) — non-zero only when a related
+      // match is live or finished, so it's invisible pre-match.
+      const change = row.position_change || 0;
+      const changeChip = change > 0
+        ? `<span class="sr-pos-change sr-pos-change--up" title="Up ${change} since kick-off">↑${change}</span>`
+        : change < 0
+        ? `<span class="sr-pos-change sr-pos-change--down" title="Down ${-change} since kick-off">↓${-change}</span>`
+        : "";
       return `
         <tr class="${isHighlighted ? "sr-table__row--highlight" : ""}">
-          <td class="is-numeric">${row.position}</td>
+          <td class="is-numeric"><span class="sr-pos">${row.position}</span>${changeChip}</td>
           <td>
             <span class="sr-team">
               <span class="sr-team__short">${escape(row.team.short_name)}</span>

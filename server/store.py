@@ -109,6 +109,8 @@ class DataStore:
         if comp is None:
             return None
 
+        position_changes = self._live_position_changes(competition_id)
+
         rows = []
         for entry in comp["standings"]:
             team = self._teams.get(entry["team_id"], {})
@@ -130,7 +132,7 @@ class DataStore:
                 "goal_difference": stats["goals_for"] - stats["goals_against"],
                 "points": stats["points"],
                 "form": entry["form"],
-                "position_change": 0,
+                "position_change": position_changes.get(entry["team_id"], 0),
             })
 
         # Re-sort + re-number when not viewing the overall table — splits change
@@ -143,6 +145,35 @@ class DataStore:
         if limit is not None:
             rows = rows[:limit]
         return {"view": view, "rows": rows}
+
+    def _live_position_changes(self, competition_id: str) -> dict[str, int]:
+        """Position-change indicator per team for live/ft matches in this league.
+
+        Spec §3.1 I: "the table updates in real time… a position-change
+        indicator highlights any team that has moved since kick-off." For the
+        prototype, a winning team's running score earns +1 and the losing team
+        −1; draws don't move anyone. Multiple in-play matches are summed (rare
+        in the single-match demo, but the math is correct).
+        """
+        changes: dict[str, int] = {}
+        for mid, match in self._matches.items():
+            if match.get("competition_id") != competition_id:
+                continue
+            phase = self.get_phase(mid)
+            if phase == "pre":
+                continue
+            score = self._derive_score(match, phase)
+            if score["home"] is None or score["away"] is None:
+                continue
+            home_id = match["home"]["team_id"]
+            away_id = match["away"]["team_id"]
+            if score["home"] > score["away"]:
+                changes[home_id] = changes.get(home_id, 0) + 1
+                changes[away_id] = changes.get(away_id, 0) - 1
+            elif score["home"] < score["away"]:
+                changes[home_id] = changes.get(home_id, 0) - 1
+                changes[away_id] = changes.get(away_id, 0) + 1
+        return changes
 
     @staticmethod
     def _split_stats(entry: dict, view: str) -> dict:
@@ -198,6 +229,58 @@ class DataStore:
             "team_id": team_id,
             "upcoming": f["upcoming"][:upcoming],
             "past": f["past"][:past],
+        }
+
+    def competition_fixtures(self, competition_id: str, upcoming: int, past: int) -> dict[str, Any] | None:
+        """Spec §3.1 II — fixtures/results for a competition.
+
+        Aggregates per-team fixture lists into a competition-wide view: dedupes
+        by match_id (each fixture appears in both teams' lists), filters to
+        this competition, sorts upcoming ascending and past descending.
+        Result chips are stripped — they're a focal-team-perspective concept
+        and don't apply at competition scope.
+        """
+        comp = self._competitions.get(competition_id)
+        if comp is None:
+            return None
+
+        seen_upcoming: set[str] = set()
+        seen_past: set[str] = set()
+        all_upcoming: list[dict] = []
+        all_past: list[dict] = []
+
+        for entry in comp["standings"]:
+            team_id = entry["team_id"]
+            fixtures = self._fixtures.get(team_id)
+            if not fixtures:
+                continue
+            for f in fixtures.get("upcoming", []):
+                if f.get("competition_id") != competition_id:
+                    continue
+                mid = f["match_id"]
+                if mid in seen_upcoming:
+                    continue
+                seen_upcoming.add(mid)
+                # Drop venue (per-team perspective).
+                clean = {k: v for k, v in f.items() if k != "venue"}
+                all_upcoming.append(clean)
+            for f in fixtures.get("past", []):
+                if f.get("competition_id") != competition_id:
+                    continue
+                mid = f["match_id"]
+                if mid in seen_past:
+                    continue
+                seen_past.add(mid)
+                clean = {k: v for k, v in f.items() if k not in ("venue", "result")}
+                all_past.append(clean)
+
+        all_upcoming.sort(key=lambda f: f["kickoff_at"])
+        all_past.sort(key=lambda f: f["kickoff_at"], reverse=True)
+
+        return {
+            "competition_id": competition_id,
+            "upcoming": all_upcoming[:upcoming],
+            "past": all_past[:past],
         }
 
     # ---- lineups ----

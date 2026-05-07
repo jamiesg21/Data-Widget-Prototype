@@ -39,6 +39,18 @@ class TeamFixturesHandler(APIHandler):
         self.respond(data, ttl=ttl_for("fixtures", None), phase=None, context={"team_id": team_id})
 
 
+class CompetitionFixturesHandler(APIHandler):
+    def get(self, competition_id: str) -> None:
+        upcoming = self.get_int("upcoming", default=5, lo=0, hi=10)
+        past = self.get_int("past", default=5, lo=0, hi=10)
+        if upcoming is None or past is None:
+            return
+        data = self.store.competition_fixtures(competition_id, upcoming, past)
+        if data is None:
+            return self.fail(404, "not_found", f"competition '{competition_id}' does not exist")
+        self.respond(data, ttl=ttl_for("fixtures", None), phase=None, context={"competition_id": competition_id})
+
+
 class LineupsHandler(APIHandler):
     def get(self, match_id: str) -> None:
         data = self.store.lineups(match_id)

@@ -1,9 +1,10 @@
 /* Head-to-head widget.
  *
- * Two views in one widget (spec §3.2 IV):
- *   Team H2H — comparison stats + recent meetings
- *   Player vs player — operator can enable/disable; lets the user pick
- *                      any two players from either squad
+ * Three sub-tabs (spec §3.2 IV):
+ *   Team H2H stats     — aggregate W/D/L, distribution bar, goals/match
+ *   Recent H2H results — match-by-match list (depth from options)
+ *   Player vs player   — operator can enable/disable; lets the user pick
+ *                        any two players from either squad
  */
 
 // Stable display order for the player vs player comparison. Iterating in
@@ -38,7 +39,7 @@ export default {
     this.panelEl = panelEl;
     this.depth = ctx.options.depth || 5;
     this.allowPlayerSelector = ctx.options.player_selector !== false;
-    this.mode = "team";              // "team" | "players"
+    this.mode = "team_stats";        // "team_stats" | "team_recent" | "players"
     this.playerA = null;             // chosen ids for player vs player
     this.playerB = null;
     await this._fetchAndRender();
@@ -70,19 +71,22 @@ export default {
   },
 
   _render(h2h, lineups, matchId) {
+    const tabs = [
+      { id: "team_stats",  label: "Team H2H stats" },
+      { id: "team_recent", label: "Recent results" },
+    ];
+    if (this.allowPlayerSelector) tabs.push({ id: "players", label: "Player vs player" });
+
     const modeButtons = `
       <div class="sr-pill-group">
-        <button type="button" class="sr-pill ${this.mode === "team" ? "sr-pill--active" : ""}" data-mode="team">Team</button>
-        ${this.allowPlayerSelector ? `<button type="button" class="sr-pill ${this.mode === "players" ? "sr-pill--active" : ""}" data-mode="players">Players</button>` : ""}
+        ${tabs.map((t) => `<button type="button" class="sr-pill ${this.mode === t.id ? "sr-pill--active" : ""}" data-mode="${t.id}">${escape(t.label)}</button>`).join("")}
       </div>
     `;
 
     let body = "";
-    if (this.mode === "team") {
-      body = this._teamView(h2h);
-    } else {
-      body = this._playersView(lineups, matchId);
-    }
+    if (this.mode === "team_stats")  body = this._teamStatsView(h2h);
+    else if (this.mode === "team_recent") body = this._teamRecentView(h2h);
+    else                                  body = this._playersView(lineups, matchId);
 
     this.panelEl.innerHTML = `<div class="sr-toolbar">${modeButtons}</div>${body}`;
 
@@ -94,7 +98,7 @@ export default {
     });
   },
 
-  _teamView(h2h) {
+  _teamStatsView(h2h) {
     const s = h2h.summary;
     const total = s.home_wins + s.away_wins + s.draws || 1;
     const homePct = (s.home_wins / total) * 100;
@@ -102,14 +106,6 @@ export default {
     const awayPct = (s.away_wins / total) * 100;
     const homeId = this.ctx.context.home.short_name;
     const awayId = this.ctx.context.away.short_name;
-
-    const recent = h2h.recent.map((m) => {
-      const d = new Date(m.kickoff_at).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
-      return `<li class="sr-h2h__match">
-        <span class="sr-h2h__date">${d}</span>
-        <span class="sr-h2h__teams">${escape(m.home.team_id.toUpperCase())} <strong>${m.home.score}-${m.away.score}</strong> ${escape(m.away.team_id.toUpperCase())}</span>
-      </li>`;
-    }).join("");
 
     return `
       <div class="sr-h2h__summary">
@@ -123,9 +119,20 @@ export default {
         <div class="sr-h2h__bar-away" style="width:${awayPct}%"></div>
       </div>
       <div class="sr-h2h__meta">${s.home_goals}-${s.away_goals} aggregate · ${s.avg_goals_per_game.toFixed(1)} goals/match</div>
-      <h4 class="sr-h2h__heading">Recent meetings</h4>
-      <ul class="sr-h2h__matches">${recent}</ul>
     `;
+  },
+
+  _teamRecentView(h2h) {
+    const recent = h2h.recent.map((m) => {
+      const d = new Date(m.kickoff_at).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+      return `<li class="sr-h2h__match">
+        <span class="sr-h2h__date">${d}</span>
+        <span class="sr-h2h__teams">${escape(m.home.team_id.toUpperCase())} <strong>${m.home.score}-${m.away.score}</strong> ${escape(m.away.team_id.toUpperCase())}</span>
+      </li>`;
+    }).join("");
+    return recent
+      ? `<ul class="sr-h2h__matches">${recent}</ul>`
+      : `<div class="sr-widget__empty">No recent meetings recorded.</div>`;
   },
 
   _playersView(lineups, matchId) {

@@ -296,6 +296,33 @@
   overflow-x: auto;
 }
 
+/* ---- Position-change indicator (spec §3.1 I) ---- */
+
+.sr-pos {
+  display: inline-block;
+  min-width: 1.2em;
+}
+
+.sr-pos-change {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 1px 5px;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 3px;
+  vertical-align: 1px;
+}
+
+.sr-pos-change--up {
+  color: #fff;
+  background: var(--sr-color-positive);
+}
+
+.sr-pos-change--down {
+  color: #fff;
+  background: var(--sr-color-negative);
+}
+
 /* ---- Team cell ---- */
 
 .sr-team {
@@ -354,6 +381,19 @@
   background: var(--sr-color-bg);
   color: var(--sr-color-text);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.sr-pill--small {
+  padding: 4px 10px;
+  font-size: 11px;
+}
+
+.sr-pill-group--secondary {
+  display: inline-flex;
+  background: transparent;
+  padding: 0;
+  margin: calc(var(--sr-spacing-unit) * 0.5) 0 calc(var(--sr-spacing-unit));
+  gap: 4px;
 }
 
 /* ---- Form chips (W/D/L) ---- */
@@ -818,8 +858,24 @@
 .sr-xg__goal--home { fill: var(--sr-color-primary); }
 .sr-xg__goal--away { fill: var(--sr-color-secondary); }
 
+.sr-xg__bar { fill-opacity: 0.55; }
+.sr-xg__bar--home { fill: var(--sr-color-primary); }
+.sr-xg__bar--away { fill: var(--sr-color-secondary); }
+
 .sr-xg__tick line { stroke: var(--sr-color-border); stroke-width: 1; }
 .sr-xg__tick text { font-size: 10px; fill: var(--sr-color-text-muted); }
+
+.sr-xg__markers-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--sr-color-text-muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+.sr-xg__markers-toggle input { margin: 0; }
 
 /* ===========================================================================
    Match facts / live commentary
