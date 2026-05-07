@@ -356,6 +356,121 @@ class DataStore:
         items = list(reversed(items))[:limit]
         return {"phase": phase, "minute_now": minute_now, "items": items}
 
+    # ---- attacking thirds ----
+
+    def attacking_thirds(self, match_id: str) -> dict[str, Any] | None:
+        if match_id not in self._matches:
+            return None
+        return {
+            "home": {"left": 33, "centre": 44, "right": 23},
+            "away": {"left": 28, "centre": 35, "right": 37},
+        }
+
+    # ---- shot map ----
+
+    def shot_map(self, match_id: str) -> dict[str, Any] | None:
+        if match_id not in self._matches:
+            return None
+        import random
+        rng = random.Random(match_id)  # deterministic per match for caching
+        shots = []
+        for i in range(12):
+            shots.append({
+                "x": round(rng.uniform(0.5, 0.95), 2),
+                "y": round(rng.uniform(0.1, 0.9), 2),
+                "on_target": rng.random() > 0.5,
+                "goal": rng.random() > 0.85,
+                "xg": round(rng.uniform(0.03, 0.35), 2),
+                "team": "home" if i % 2 == 0 else "away",
+            })
+        return {"shots": shots}
+
+    # ---- pass networks ----
+
+    def pass_networks(self, match_id: str) -> dict[str, Any] | None:
+        if match_id not in self._matches:
+            return None
+        return {
+            "home": [
+                {"from": "Salah", "to": "Nunez", "count": 14},
+                {"from": "Alexander-Arnold", "to": "Salah", "count": 11},
+            ],
+            "away": [
+                {"from": "Saka", "to": "Jesus", "count": 10},
+                {"from": "Odegaard", "to": "Saka", "count": 9},
+            ],
+        }
+
+    # ---- momentum ----
+
+    def momentum(self, match_id: str) -> dict[str, Any] | None:
+        if match_id not in self._matches:
+            return None
+        phase = self.get_phase(match_id)
+        if phase == "pre":
+            return {"periods": []}
+        return {
+            "periods": [
+                {"minute": 5,  "home": 0.60, "away": 0.40},
+                {"minute": 10, "home": 0.45, "away": 0.55},
+                {"minute": 15, "home": 0.55, "away": 0.45},
+                {"minute": 20, "home": 0.38, "away": 0.62},
+                {"minute": 25, "home": 0.52, "away": 0.48},
+                {"minute": 30, "home": 0.61, "away": 0.39},
+            ],
+        }
+
+    # ---- average positions ----
+
+    def average_positions(self, match_id: str) -> dict[str, Any] | None:
+        if match_id not in self._matches:
+            return None
+        return {
+            "home": {
+                "in_possession": [
+                    {"name": "Alisson",          "x": 0.05, "y": 0.50},
+                    {"name": "Alexander-Arnold", "x": 0.25, "y": 0.85},
+                    {"name": "Van Dijk",         "x": 0.20, "y": 0.40},
+                    {"name": "Salah",            "x": 0.60, "y": 0.90},
+                ],
+                "out_of_possession": [
+                    {"name": "Alisson", "x": 0.05, "y": 0.50},
+                    {"name": "Salah",   "x": 0.35, "y": 0.85},
+                ],
+            },
+            "away": {
+                "in_possession": [
+                    {"name": "Raya", "x": 0.05, "y": 0.50},
+                    {"name": "Saka", "x": 0.60, "y": 0.85},
+                ],
+                "out_of_possession": [
+                    {"name": "Raya", "x": 0.05, "y": 0.50},
+                ],
+            },
+        }
+
+    # ---- bet prompts ----
+
+    def bet_prompts(self, match_id: str) -> dict[str, Any] | None:
+        if match_id not in self._matches:
+            return None
+        return {
+            "pre": [
+                {"text": "Arsenal have kept a clean sheet in 7 of their last 10 home matches",
+                 "confidence": 0.82},
+                {"text": "Liverpool have scored in 14 consecutive away games",
+                 "confidence": 0.91},
+                {"text": "Both teams have scored in 4 of their last 5 H2H meetings",
+                 "confidence": 0.75},
+            ],
+            "live": [
+                {"text": "Arsenal leading — they win 78% of games when ahead at half time",
+                 "confidence": 0.78, "event": "goal"},
+                {"text": "Liverpool down to 10 men — win rate drops to 21%",
+                 "confidence": 0.65, "event": "red_card"},
+            ],
+        }
+
     # ---- helpers ----
 
     def _derive_score(self, match: dict, phase: str) -> dict[str, int | None]:

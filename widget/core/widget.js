@@ -16,6 +16,31 @@ import { TabContainer } from "./tabs.js";
 const CONTEXT_POLL_MS = 15000;     // refresh match context every 15s
 const LIVE_DATA_POLL_MS = 10000;   // refresh active live tab every 10s
 
+// Per-tab phase restrictions.  "pre" = shown only pre-match; "live" = shown
+// only when in-play.  Tabs not listed here are always visible.
+const TAB_PHASES = {
+  fixtures:          "pre",
+  h2h:               "pre",
+  pass_networks:     "pre",
+  average_positions: "pre",
+  xg_timeline:       "live",
+  momentum_tracker:  "live",
+};
+
+// Per-tab poll interval overrides (ms).  0 = no polling beyond context.
+const DEFAULT_POLL_MS = {
+  xg_timeline:       5000,
+  match_facts:       10000,
+  team_stats:        15000,
+  lineups:           30000,
+  attacking_thirds:  30000,
+  shot_map:          15000,
+  pass_networks:     0,
+  momentum_tracker:  60000,
+  average_positions: 0,
+  bet_prompts:       30000,
+};
+
 export class Widget {
   constructor({ rootEl, apiBase, pageType, matchId, competitionId, devMode }) {
     this.rootEl = rootEl;
@@ -79,13 +104,12 @@ export class Widget {
   }
 
   _visibleTabs() {
-    // Hide phase-incompatible tabs (xG race pre-match, etc.) — driven by the
-    // tab's id. The full mapping is loose for the prototype; production reads
-    // it from the server-side widget metadata.
     const phase = this.context?.phase;
     return this.config.tabs.filter((t) => {
-      if (phase === "pre"  && (t.id === "xg_timeline")) return false;
-      // commentary-only tabs would also be hidden pre-match in a richer impl
+      const p = TAB_PHASES[t.id];
+      if (!p) return true;
+      if (p === "pre"  && phase === "live") return false;
+      if (p === "live" && phase !== "live") return false;
       return true;
     });
   }
@@ -110,6 +134,18 @@ export class Widget {
   }
 
   async _loadRenderer(tabId) {
+    // All renderers live in ../widgets/{id}.js — the dynamic import covers
+    // both the original 7 and the 6 new stubs added in §4.
+    const KNOWN_WIDGETS = new Set([
+      "league_table", "fixtures", "lineups", "h2h", "team_stats",
+      "xg_timeline", "match_facts",
+      "attacking_thirds", "shot_map", "pass_networks",
+      "momentum_tracker", "average_positions", "bet_prompts",
+    ]);
+    if (!KNOWN_WIDGETS.has(tabId)) {
+      console.warn(`[sr-widget] unknown tab id "${tabId}"`);
+      return null;
+    }
     try {
       const mod = await import(`../widgets/${tabId}.js`);
       return mod.default;

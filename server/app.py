@@ -23,11 +23,17 @@ from server.cache import TTLCache
 from server.handlers.context import CompetitionContextHandler, MatchContextHandler
 from server.handlers.dev import DevPhaseHandler
 from server.handlers.widgets import (
+    AttackingThirdsHandler,
+    AveragePositionsHandler,
+    BetPromptsHandler,
     CommentaryHandler,
     H2HHandler,
     LineupsHandler,
     MatchFactsHandler,
+    MomentumHandler,
+    PassNetworksHandler,
     PlayerH2HHandler,
+    ShotMapHandler,
     StandingsHandler,
     TeamFixturesHandler,
     TeamStatsHandler,
@@ -70,8 +76,14 @@ def make_app() -> tornado.web.Application:
         (r"/api/v1/matches/([^/]+)/h2h",                H2HHandler,          deps),
         (r"/api/v1/matches/([^/]+)/h2h/players",        PlayerH2HHandler,    deps),
         (r"/api/v1/matches/([^/]+)/xg-timeline",        XGTimelineHandler,   deps),
-        (r"/api/v1/matches/([^/]+)/match-facts",        MatchFactsHandler,   deps),
-        (r"/api/v1/matches/([^/]+)/commentary",         CommentaryHandler,   deps),
+        (r"/api/v1/matches/([^/]+)/match-facts",        MatchFactsHandler,       deps),
+        (r"/api/v1/matches/([^/]+)/commentary",         CommentaryHandler,       deps),
+        (r"/api/v1/matches/([^/]+)/attacking-thirds",   AttackingThirdsHandler,  deps),
+        (r"/api/v1/matches/([^/]+)/shot-map",           ShotMapHandler,          deps),
+        (r"/api/v1/matches/([^/]+)/pass-networks",      PassNetworksHandler,     deps),
+        (r"/api/v1/matches/([^/]+)/momentum",           MomentumHandler,         deps),
+        (r"/api/v1/matches/([^/]+)/average-positions",  AveragePositionsHandler, deps),
+        (r"/api/v1/matches/([^/]+)/bet-prompts",        BetPromptsHandler,       deps),
 
         # Dev — phase toggle
         (r"/api/v1/_dev/phase/([^/]+)", DevPhaseHandler, {**deps, "dev_mode": dev_mode}),

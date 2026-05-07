@@ -127,3 +127,61 @@ class CommentaryHandler(APIHandler):
             return self.fail(404, "not_found", f"match '{match_id}' does not exist")
         phase = _phase_or_none(self, match_id)
         self.respond(data, ttl=ttl_for("commentary", phase) if phase != "pre" else 60, phase=phase, context={"match_id": match_id})
+
+
+class AttackingThirdsHandler(APIHandler):
+    def get(self, match_id: str) -> None:
+        data = self.store.attacking_thirds(match_id)
+        if data is None:
+            return self.fail(404, "not_found", f"match '{match_id}' does not exist")
+        phase = _phase_or_none(self, match_id)
+        ttl = 5 if phase == "live" else 300
+        self.respond(data, ttl=ttl, phase=phase, context={"match_id": match_id})
+
+
+class ShotMapHandler(APIHandler):
+    def get(self, match_id: str) -> None:
+        data = self.store.shot_map(match_id)
+        if data is None:
+            return self.fail(404, "not_found", f"match '{match_id}' does not exist")
+        phase = _phase_or_none(self, match_id)
+        ttl = 5 if phase == "live" else 600
+        self.respond(data, ttl=ttl, phase=phase, context={"match_id": match_id})
+
+
+class PassNetworksHandler(APIHandler):
+    def get(self, match_id: str) -> None:
+        data = self.store.pass_networks(match_id)
+        if data is None:
+            return self.fail(404, "not_found", f"match '{match_id}' does not exist")
+        phase = _phase_or_none(self, match_id)
+        self.respond(data, ttl=3600, phase=phase, context={"match_id": match_id})
+
+
+class MomentumHandler(APIHandler):
+    def get(self, match_id: str) -> None:
+        data = self.store.momentum(match_id)
+        if data is None:
+            return self.fail(404, "not_found", f"match '{match_id}' does not exist")
+        phase = _phase_or_none(self, match_id)
+        ttl = 30 if phase == "live" else 60
+        self.respond(data, ttl=ttl, phase=phase, context={"match_id": match_id})
+
+
+class AveragePositionsHandler(APIHandler):
+    def get(self, match_id: str) -> None:
+        data = self.store.average_positions(match_id)
+        if data is None:
+            return self.fail(404, "not_found", f"match '{match_id}' does not exist")
+        phase = _phase_or_none(self, match_id)
+        self.respond(data, ttl=3600, phase=phase, context={"match_id": match_id})
+
+
+class BetPromptsHandler(APIHandler):
+    def get(self, match_id: str) -> None:
+        data = self.store.bet_prompts(match_id)
+        if data is None:
+            return self.fail(404, "not_found", f"match '{match_id}' does not exist")
+        phase = _phase_or_none(self, match_id)
+        ttl = 30 if phase == "live" else 300
+        self.respond(data, ttl=ttl, phase=phase, context={"match_id": match_id})
