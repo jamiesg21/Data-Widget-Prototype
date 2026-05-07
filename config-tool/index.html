@@ -3,58 +3,124 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sportingrisk Widget — Theming Tool</title>
+  <title>Sportingrisk Widget — Operator Config Tool</title>
   <link rel="stylesheet" href="/config/config.css" />
 </head>
 <body>
   <header class="ct-header">
     <div class="ct-header__brand">
-      <strong>Sportingrisk</strong> · Widget Theming Tool
+      <strong>Sportingrisk</strong> · Operator Config Tool
     </div>
     <div class="ct-header__themes" role="radiogroup" aria-label="Editing theme">
-      <button type="button" class="ct-theme-btn ct-theme-btn--active" data-theme="light">☀ Light</button>
-      <button type="button" class="ct-theme-btn"                 data-theme="dark">☾ Dark</button>
+      <button type="button" class="ct-theme-btn ct-theme-btn--active" data-theme="light">&#9788; Light</button>
+      <button type="button" class="ct-theme-btn"                 data-theme="dark">&#9790; Dark</button>
     </div>
   </header>
 
   <main class="ct-main">
+    <!-- Left panel: theming controls -->
     <aside class="ct-controls" aria-label="Theme controls">
       <!-- Controls injected by config.js -->
     </aside>
 
-    <section class="ct-preview" aria-label="Live widget preview">
-      <div class="ct-preview__inner">
-        <!-- Inline overrides — sits AFTER widget.css in the cascade so it wins.
-             config.js rewrites this whenever a control changes. -->
-        <style id="sr-preview-overrides"></style>
+    <!-- Right panel: preview + per-page-type config -->
+    <div class="ct-right">
 
-        <div id="sr-widget-root" data-theme="light"></div>
+      <!-- Widget preview -->
+      <section class="ct-preview" aria-label="Live widget preview">
+        <div class="ct-preview__inner">
+          <!-- Inline overrides — sits AFTER widget.css in the cascade so it wins.
+               config.js rewrites this whenever a control changes. -->
+          <style id="sr-preview-overrides"></style>
 
-        <script>
-          window.SR_CONFIG = {
-            match: {
-              tabs: [
-                { id: "league_table", label: "Standings",    default: true  },
-                { id: "fixtures",     label: "Form",         default: false },
-                { id: "lineups",      label: "Line-ups",     default: false },
-                { id: "team_stats",   label: "Team stats",   default: false },
-                { id: "h2h",          label: "Head to head", default: false },
-                { id: "xg_timeline",  label: "xG race",      default: false },
-                { id: "match_facts",  label: "Match facts",  default: false },
-              ],
-              options: { league_table: { default_view: "overall", limit: 8 } },
-            },
-          };
-        </script>
-        <script
-          src="/widget/loader.js"
-          data-client="theming-tool"
-          data-page-type="match"
-          data-match-id="ars-liv-2026-05-06"></script>
-      </div>
-    </section>
+          <div id="sr-widget-root" data-theme="light"></div>
+
+          <script id="sr-preview-config">
+            window.SR_CONFIG = {
+              match: {
+                tabs: [
+                  { id: "league_table", label: "Standings",    default: true  },
+                  { id: "fixtures",     label: "Form",         default: false },
+                  { id: "lineups",      label: "Line-ups",     default: false },
+                  { id: "team_stats",   label: "Team stats",   default: false },
+                  { id: "h2h",          label: "Head to head", default: false },
+                  { id: "xg_timeline",  label: "xG race",      default: false },
+                  { id: "match_facts",  label: "Match facts",  default: false },
+                ],
+                options: { league_table: { default_view: "overall", limit: 10, poll_ms: 60000 } },
+              },
+            };
+          </script>
+          <script
+            src="/widget/loader.js"
+            data-client="theming-tool"
+            data-page-type="match"
+            data-match-id="ars-liv-2026-05-06"></script>
+        </div>
+      </section>
+
+      <!-- §6 — Per-Page-Type Configuration -->
+      <section class="ct-section ct-page-config">
+        <h2 class="ct-section__title">Widget Configuration</h2>
+        <p class="ct-section__sub">Configure which widgets appear on each page type (L1), which tabs are visible and which opens by default (L2), and per-widget behaviour options (L3).</p>
+
+        <!-- Page type switcher -->
+        <div class="ct-page-tabs" role="tablist" aria-label="Page type">
+          <button type="button" class="ct-page-tab ct-page-tab--active" data-page-type="match"       role="tab">Match page</button>
+          <button type="button" class="ct-page-tab"                     data-page-type="competition" role="tab">Competition page</button>
+          <button type="button" class="ct-page-tab"                     data-page-type="homepage"    role="tab">Homepage</button>
+        </div>
+
+        <!-- L2: Tab visibility & default -->
+        <div class="ct-l2">
+          <h3 class="ct-l2__heading">L2 — Tab configuration</h3>
+          <p class="ct-l2__sub">Toggle widgets on/off and pick which tab opens by default. Phase badges show when each tab is active.</p>
+          <div class="ct-tab-row ct-tab-row--header">
+            <span>Widget</span>
+            <span>Opens by default</span>
+          </div>
+          <div id="ct-l2-tabs">
+            <!-- Injected by config.js renderL2() -->
+          </div>
+        </div>
+
+        <!-- L3: Behaviour/display options -->
+        <div class="ct-l3">
+          <h3 class="ct-l3__heading">L3 — Behaviour &amp; display options</h3>
+          <p class="ct-l3__sub">Fine-tune row counts, update intervals, chart styles, and more for each enabled widget.</p>
+          <div id="ct-l3-options">
+            <!-- Injected by config.js renderL3() -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Phase Transitions read-only info panel -->
+      <section class="ct-section ct-transitions">
+        <h2 class="ct-section__title">Phase Transitions (automatic at kick-off)</h2>
+        <p class="ct-section__sub">These transitions happen automatically — no operator action required.</p>
+        <table class="ct-transitions__table">
+          <thead>
+            <tr><th>Widget</th><th>Automatic at kick-off</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>League table</td><td>Static standings &rarr; live position-change view</td></tr>
+            <tr><td>Squad list / Line-ups</td><td>Squad list &rarr; confirmed XI &rarr; live icons in-play</td></tr>
+            <tr><td>Team stats</td><td>Season tabs remain; Live match stats tab activates</td></tr>
+            <tr><td>Attacking thirds</td><td>Historical channel data &rarr; live in-game data</td></tr>
+            <tr><td>Shot map</td><td>Last 5 games &rarr; live match shot plotting</td></tr>
+            <tr><td>xG race graph</td><td>Hidden &rarr; cumulative xG tracking begins</td></tr>
+            <tr><td>Momentum tracker</td><td>Hidden &rarr; rolling dominance chart activates</td></tr>
+            <tr><td>Bet prompts</td><td>Data-driven prompts &rarr; event-triggered in-play prompts</td></tr>
+            <tr><td>Match facts / Commentary</td><td>Automated fact cards &rarr; live text commentary feed</td></tr>
+            <tr><td>H2H, Pass networks, Avg positions</td><td>Pre-match only &mdash; hidden in-play</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+    </div><!-- /.ct-right -->
   </main>
 
+  <!-- Output footer: Generated CSS -->
   <footer class="ct-output">
     <div class="ct-output__head">
       <h3>Generated CSS</h3>
@@ -66,6 +132,46 @@
     <pre id="ct-output-code" class="ct-output__code"><code></code></pre>
     <p class="ct-output__hint">Paste into your operator stylesheet. Apply <code>data-theme="dark"</code> on the widget root to switch.</p>
   </footer>
+
+  <!-- Output section: SR_CONFIG + embed snippets -->
+  <section class="ct-output ct-output--config">
+    <div class="ct-output__head">
+      <h3>Generated SR_CONFIG</h3>
+      <div class="ct-output__actions">
+        <button type="button" id="ct-copy-config" class="ct-btn ct-btn--primary">Copy SR_CONFIG</button>
+      </div>
+    </div>
+    <pre id="ct-config-output" class="ct-output__code"><code></code></pre>
+    <p class="ct-output__hint">Paste this <code>&lt;script&gt;</code> block into your page <strong>before</strong> the widget loader.</p>
+
+    <div class="ct-embeds">
+      <h3 class="ct-embeds__heading">Embed snippets</h3>
+      <p class="ct-embeds__sub">Place the relevant snippet on each page type, after your SR_CONFIG block.</p>
+
+      <div class="ct-embed-group">
+        <div class="ct-embed-group__label">Competition page embed</div>
+        <pre class="ct-output__code ct-output__code--sm"><code>&lt;div id="sr-widget-root"&gt;&lt;/div&gt;
+&lt;script src="https://widgets.sportingrisk.com/v1/loader.js"
+  data-client="OPERATOR_ID" data-page-type="competition"
+  data-competition-id="{{page.competition_id}}"&gt;&lt;/script&gt;</code></pre>
+      </div>
+
+      <div class="ct-embed-group">
+        <div class="ct-embed-group__label">Match page embed</div>
+        <pre class="ct-output__code ct-output__code--sm"><code>&lt;div id="sr-widget-root"&gt;&lt;/div&gt;
+&lt;script src="https://widgets.sportingrisk.com/v1/loader.js"
+  data-client="OPERATOR_ID" data-page-type="match"
+  data-match-id="{{page.match_id}}"&gt;&lt;/script&gt;</code></pre>
+      </div>
+
+      <div class="ct-embed-group">
+        <div class="ct-embed-group__label">Homepage embed</div>
+        <pre class="ct-output__code ct-output__code--sm"><code>&lt;div id="sr-widget-root"&gt;&lt;/div&gt;
+&lt;script src="https://widgets.sportingrisk.com/v1/loader.js"
+  data-client="OPERATOR_ID" data-page-type="homepage"&gt;&lt;/script&gt;</code></pre>
+      </div>
+    </div>
+  </section>
 
   <script type="module" src="/config/config.js"></script>
 </body>
