@@ -21,7 +21,7 @@ const DEFAULT_CONFIG = {
       { id: "team_stats",     label: "Team stats",    default: false },
       { id: "h2h",            label: "Head to head",  default: false },
       { id: "xg_timeline",    label: "xG race",       default: false },
-      { id: "match_facts",       label: "Match facts",     default: false },
+      { id: "match_facts",       label: "Match facts",      default: false },
       { id: "attacking_thirds",  label: "Attacking thirds", default: false },
       { id: "shot_map",          label: "Shot map",         default: false },
       { id: "pass_networks",     label: "Pass networks",    default: false },
@@ -46,17 +46,29 @@ const DEFAULT_CONFIG = {
   },
   competition: {
     tabs: [
-      { id: "league_table", label: "Standings", default: true  },
-      { id: "fixtures",     label: "Fixtures",  default: false },
+      { id: "league_table", label: "Standings",   default: true  },
+      { id: "fixtures",     label: "Fixtures",    default: false },
+      { id: "bet_prompts",  label: "Bet prompts", default: false },
     ],
     options: {
-      league_table: { default_view: "overall", limit: null },
+      league_table: { default_view: "overall", limit: null, poll_ms: 60000 },
       fixtures:     { upcoming: 5, past: 5 },
+      bet_prompts:  { max_prompts: 5, poll_ms: 30000 },
     },
   },
   homepage: {
-    tabs: [],
-    options: {},
+    tabs: [
+      { id: "league_table", label: "Standings",   default: true  },
+      { id: "fixtures",     label: "Fixtures",    default: false },
+      { id: "bet_prompts",  label: "Bet prompts", default: false },
+      { id: "match_facts",  label: "Match facts", default: false },
+    ],
+    options: {
+      league_table: { default_view: "overall", limit: 10, poll_ms: 60000 },
+      fixtures:     { upcoming: 5, past: 5 },
+      bet_prompts:  { max_prompts: 5, poll_ms: 30000 },
+      match_facts:  { facts_per_section: 3, commentary_limit: 25, commentary_detail: "full", poll_ms: 5000 },
+    },
   },
 };
 
