@@ -111,8 +111,25 @@ export class Widget {
 
   async _loadRenderer(tabId) {
     try {
-      const mod = await import(`../widgets/${tabId}.js`);
-      return mod.default;
+      switch (tabId) {
+        case "league_table":    return (await import("../widgets/league_table.js")).default;
+        case "fixtures":        return (await import("../widgets/fixtures.js")).default;
+        case "lineups":         return (await import("../widgets/lineups.js")).default;
+        case "team_stats":      return (await import("../widgets/team_stats.js")).default;
+        case "h2h":             return (await import("../widgets/h2h.js")).default;
+        case "xg_timeline":     return (await import("../widgets/xg_timeline.js")).default;
+        case "match_facts":     return (await import("../widgets/match_facts.js")).default;
+        case "attacking_thirds":   return (await import("../widgets/attacking_thirds.js")).default;
+        case "shot_map":           return (await import("../widgets/shot_map.js")).default;
+        case "pass_networks":      return (await import("../widgets/pass_networks.js")).default;
+        case "momentum_tracker":   return (await import("../widgets/momentum_tracker.js")).default;
+        case "average_positions":  return (await import("../widgets/average_positions.js")).default;
+        case "bet_prompts":        return (await import("../widgets/bet_prompts.js")).default;
+        default: {
+          console.warn(`[sr-widget] no renderer module for ${tabId}`);
+          return null;
+        }
+      }
     } catch (err) {
       console.warn(`[sr-widget] no renderer module for ${tabId}`, err);
       return null;

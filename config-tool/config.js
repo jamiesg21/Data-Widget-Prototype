@@ -19,6 +19,26 @@
 
 const STORAGE_KEY = "sr-config-tool-v2";  // bumped from v1 — schema change
 
+// ---- Widget availability catalogue (§5) ----
+// pageTypes lists which page contexts each widget may appear on.
+// Used to filter the widget toggle list when the operator selects a page type.
+
+const WIDGETS = [
+  { id: "league_table",      label: "League Table",             pageTypes: ["competition", "match", "homepage"] },
+  { id: "fixtures",          label: "Fixtures / Results",       pageTypes: ["competition", "match", "homepage"] },
+  { id: "lineups",           label: "Squad List / Line-ups",    pageTypes: ["match"] },
+  { id: "h2h",               label: "Head-to-Head",             pageTypes: ["match"] },
+  { id: "team_stats",        label: "Team Stats",               pageTypes: ["match"] },
+  { id: "attacking_thirds",  label: "Attacking Thirds",         pageTypes: ["match"] },
+  { id: "xg_timeline",       label: "xG Race Graph",            pageTypes: ["match"] },
+  { id: "shot_map",          label: "Shot Map",                 pageTypes: ["match"] },
+  { id: "pass_networks",     label: "Pass Networks",            pageTypes: ["match"] },
+  { id: "momentum_tracker",  label: "Momentum Tracker",         pageTypes: ["match"] },
+  { id: "average_positions", label: "Average Positions",        pageTypes: ["match"] },
+  { id: "bet_prompts",       label: "Bet Prompts",              pageTypes: ["competition", "match", "homepage"] },
+  { id: "match_facts",       label: "Match Facts / Commentary", pageTypes: ["match", "homepage"] },
+];
+
 // scope: "shared" — applies to both themes (written to state.shared).
 // scope: "theme"  — different per theme (written to state.light / state.dark).
 const VARIABLES = [
@@ -79,6 +99,7 @@ const DEFAULT_DARK = {
 };
 
 let state = loadState();
+let currentPageType = "match";   // tracks which page-type tab is selected
 
 const els = {
   controls: document.querySelector(".ct-controls"),
@@ -88,6 +109,8 @@ const els = {
   copyBtn: document.querySelector("#ct-copy"),
   overrides: document.querySelector("#sr-preview-overrides"),
   widgetRoot: document.querySelector("#sr-widget-root"),
+  widgetList: document.querySelector("#ct-widget-list"),
+  pageTypeButtons: document.querySelectorAll("[data-page-type]"),
 };
 
 init();
@@ -96,7 +119,42 @@ function init() {
   renderControls();
   attachThemeButtons();
   attachOutputButtons();
+  attachPageTypeButtons();
+  renderWidgetList();
   applyAll();
+}
+
+// ---- Widget availability panel ----
+
+function attachPageTypeButtons() {
+  if (!els.pageTypeButtons.length) return;
+  els.pageTypeButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      currentPageType = btn.dataset.pageType;
+      els.pageTypeButtons.forEach((b) => {
+        b.classList.toggle("ct-page-type-btn--active", b.dataset.pageType === currentPageType);
+      });
+      renderWidgetList();
+    });
+  });
+}
+
+function renderWidgetList() {
+  if (!els.widgetList) return;
+  const availableWidgets = WIDGETS.filter(w => w.pageTypes.includes(currentPageType));
+  els.widgetList.innerHTML = "";
+  for (const widget of availableWidgets) {
+    const row = document.createElement("div");
+    row.className = "ct-widget-row";
+    row.innerHTML = `
+      <label class="ct-widget-row__label">
+        <input type="checkbox" class="ct-widget-row__checkbox" data-widget-id="${widget.id}" checked>
+        ${widget.label}
+      </label>
+      <span class="ct-widget-row__pages">${widget.pageTypes.join(", ")}</span>
+    `;
+    els.widgetList.appendChild(row);
+  }
 }
 
 // ---- State ----
