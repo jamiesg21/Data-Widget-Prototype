@@ -35,13 +35,19 @@ const CONTEXT_POLL_MS = 15000;     // refresh match context every 15s
 // SR_CONFIG.{pageType}.options.{tabId}.poll_ms (spec §2.5.1, §2.5.3).
 // Pre-match-only widgets have 0 → no live polling needed.
 const DEFAULT_POLL_MS = {
-  league_table: 60000,    // standings: position changes are slow
-  fixtures:     0,        // pre-match only
-  lineups:      30000,    // formation events: goals / cards / subs
-  team_stats:   30000,    // live match stats: possession / shots
-  h2h:          0,        // pre-match only
-  xg_timeline:  15000,    // shots a few times a minute at most
-  match_facts:  5000,     // live commentary feed (matches server TTL)
+  league_table:      60000,
+  fixtures:          0,
+  lineups:           30000,
+  team_stats:        30000,
+  h2h:               0,
+  xg_timeline:       15000,
+  match_facts:       5000,
+  attacking_thirds:  30000,
+  shot_map:          15000,
+  pass_networks:     0,
+  momentum_tracker:  60000,
+  average_positions: 0,
+  bet_prompts:       30000,
 };
 
 // Per-tab phase restrictions.  "pre" = shown only pre-match; "live" = shown
@@ -53,20 +59,6 @@ const TAB_PHASES = {
   average_positions: "pre",
   xg_timeline:       "live",
   momentum_tracker:  "live",
-};
-
-// Per-tab poll interval overrides (ms).  0 = no polling beyond context.
-const DEFAULT_POLL_MS = {
-  xg_timeline:       5000,
-  match_facts:       10000,
-  team_stats:        15000,
-  lineups:           30000,
-  attacking_thirds:  30000,
-  shot_map:          15000,
-  pass_networks:     0,
-  momentum_tracker:  60000,
-  average_positions: 0,
-  bet_prompts:       30000,
 };
 
 export class Widget {
