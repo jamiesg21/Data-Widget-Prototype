@@ -1,7 +1,6 @@
 # Sportingrisk Data Widget Prototype
 
-A configurable widget suite delivering real-time football data to betting operator websites. Operators drop in a single embed tag per page template; the widget resolves context automatically, filters tabs by match phase (pre / live / full-time), and renders the relevant data. Covers 13 widget types across 4 categories with a three-level operator configuration model.
-
+A configurable widget suite delivering real-time football data to betting operator websites. Operators drop in a single embed tag per page template; the widget resolves context automatically, filters tabs by match phase (pre / live / full-time), and renders the relevant data.
 ## Quick start
 
 **Without Docker:**
@@ -39,7 +38,7 @@ example/         Polished operator example page (Component 4)
 docs/            API reference
 ```
 
-## The 13 widget types
+## The widget types
 
 **General Information**
 
@@ -56,22 +55,10 @@ docs/            API reference
 | Head-to-Head | PRE | Team comparison + player vs player |
 | Team Stats | BOTH | Season/recency filters; live match stats at kick-off |
 
-**Visualisation**
-
-| Widget | Phase | Description |
-|---|---|---|
-| Attacking Thirds | BOTH | L/C/R channel split; switches to live at kick-off |
-| xG Race Graph | LIVE | Cumulative xG chart; hidden pre-match |
-| Shot Map | BOTH | Historical shots pre-match; live plotting in-play |
-| Pass Networks | PRE | Historical passing structure and top pairs |
-| Momentum Tracker | LIVE | 5-min rolling dominance chart; hidden pre-match |
-| Average Positions | PRE | Player average positions on pitch |
-
 **Written**
 
 | Widget | Phase | Description |
 |---|---|---|
-| Bet Prompts | BOTH | Data-driven pre-match prompts; event-triggered in-play |
 | Match Facts / Commentary | BOTH | Fact cards pre-match; live vidi-printer commentary |
 
 ## Widget availability by page type
@@ -83,13 +70,6 @@ docs/            API reference
 | Line-ups | Yes | — | Pinned |
 | Head-to-Head | Yes | — | — |
 | Team Stats | Yes | — | Pinned |
-| Attacking Thirds | Yes | — | — |
-| xG Race Graph | Yes (live only) | — | — |
-| Shot Map | Yes | — | — |
-| Pass Networks | Yes | — | — |
-| Momentum Tracker | Yes (live only) | — | — |
-| Average Positions | Yes | — | — |
-| Bet Prompts | Yes | — | — |
 | Match Facts / Commentary | Yes | — | — |
 
 Homepage widgets use a `pinned` context (a specific `match_id` or `competition_id`) set in `SR_CONFIG`.
